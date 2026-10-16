@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "itr-stock-assist"
-version = "0.3.0"
+version = "0.3.1"
 description = "Local-first Indian equity capital-gains working papers"
 requires-python = ">=3.11"
 dependencies = ["openpyxl==3.1.5", "et-xmlfile==2.0.0"]

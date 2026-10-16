@@ -91,6 +91,12 @@ def anniversary(value):
     return value.replace(year=value.year + 1, day=day)
 
 
+def holding_term(buy, sell):
+    # Delhi HC (ITA 1234/2011, 12-Apr-2012): 12 months from an acquisition on day D end on
+    # D-1 of the next year, so a sale on the anniversary already follows more than 12 months.
+    return "LTCG" if sell >= anniversary(buy) else "STCG"
+
+
 def review(files, fy):
     with localcontext() as context:
         context.prec = 80
@@ -190,7 +196,7 @@ def _review(files, fy):
         term = ""
         if (buy and sell and buy < sell and (not native or not outside)
                 and raw["asset_type"] in ("listed_equity", "equity_mf")):
-            term = "LTCG" if sell > anniversary(buy) else "STCG"
+            term = holding_term(buy, sell)
             record["holding_days"] = (sell - buy).days
         if native and term and record["broker_term"] and term != record["broker_term"]:
             issues.append("Broker STCG/LTCG classification differs from the calendar holding period.")
@@ -207,7 +213,7 @@ def _review(files, fy):
         if eligible_broker:
             record["status"] = "REVIEW_REQUIRED"
         if not issues:
-            term = "LTCG" if sell > anniversary(buy) else "STCG"
+            term = holding_term(buy, sell)
             gain = amounts["proceeds_inr"] - amounts["cost_inr"] - amounts["transfer_expenses_inr"]
             totals[term] += gain
             record.update(term=term, gain=f"{gain:.2f}", holding_days=(sell - buy).days)
@@ -244,7 +250,7 @@ def workbook_bytes(result):
         ["Money representation", "Exact decimal text in INR; not Excel numeric cells."],
         ["Calculation", "Gross proceeds - confirmed allowable acquisition cost - allowable "
          "transfer expenses excluding STT. No rounding before summation."],
-        ["Holding period", "For supported equity only: >12 calendar months = LTCG; otherwise STCG."],
+        ["Holding period", "For supported equity only: >12 calendar months = LTCG (a sale on the one-year anniversary already qualifies); otherwise STCG."],
         ["Rule scope", "FY 2024-25 and FY 2025-26 only. No tax-rate calculation."],
         ["Official reference", RULE_SOURCE],
         ["Source reviewed", "CBDT capital-gains FAQ, 24 July 2024, holding period question."],

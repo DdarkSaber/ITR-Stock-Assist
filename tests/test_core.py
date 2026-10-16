@@ -40,9 +40,9 @@ def test_sample_import_to_xlsx():
 
 
 @pytest.mark.parametrize(("buy", "sell", "term"), [
-    ("2024-05-10", "2025-05-10", "STCG"),
-    ("2024-05-10", "2025-05-11", "LTCG"),
+    ("2024-05-10", "2025-05-10", "LTCG"),
     ("2024-05-10", "2025-05-09", "STCG"),
+    ("2024-05-10", "2025-05-11", "LTCG"),
     ("2024-02-29", "2025-03-01", "LTCG"),
 ])
 def test_calendar_holding_period(buy, sell, term):

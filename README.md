@@ -76,7 +76,7 @@ File-level schema, malformed CSV and size failures stop the entire import. Row-l
 Implemented for **FY 2024-25 / AY 2025-26** and **FY 2025-26 / AY 2026-27** only:
 
 - Gain/loss = gross proceeds minus confirmed allowable cost minus confirmed allowable transfer expenses (excluding STT).
-- Supported listed equity and equity-oriented funds: holding period **greater than 12 calendar months** is LTCG, otherwise STCG. Exact calendar anniversaries, not a fixed 365-day threshold. The 29-Feb to 28-Feb next-year boundary is blocked for advice rather than guessed.
+- Supported listed equity and equity-oriented funds: holding period **greater than 12 calendar months** is LTCG, otherwise STCG. Months are calendar months (General Clauses Act s.3(35)); per Delhi HC (ITA 1234/2011) 12 months from acquisition on day D end on D-1 of the next year, so a sale **on** the one-year anniversary is LTCG, matching Groww's "on or after 1 year". Not a fixed 365-day threshold. The 29-Feb to 28-Feb next-year boundary is blocked for advice rather than guessed.
 - Acquisitions on or before **31 January 2018** are conservatively blocked for grandfathering review, not calculated with an assumed fair-market value.
 - Only disposals within the selected 1 April through 31 March financial year contribute.
 
