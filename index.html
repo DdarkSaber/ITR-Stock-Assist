@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>ITR Stock Assist | Indian capital gains</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./web/style.css">
+  <script src="./web/app.js" defer></script>
+</head>
+<body>
+  <header><div class="brand"><span class="logo" aria-hidden="true">S</span> ITR Stock Assist <span class="edition">SOLAR COPPER</span></div><span class="privacy">Local processing / no financial uploads</span></header>
+  <main>
+    <section class="hero">
+      <div><p class="eyebrow">INDIAN EQUITY / EQUITY MUTUAL FUNDS</p><h1>Your capital gains,<br>made <em>clear.</em></h1><p class="intro">From disposed lots to a traceable working paper. Review short- and long-term gains, resolve the gaps, and take a clearer workbook into filing.</p></div>
+      <div class="year"><label for="fy">Financial year</label><select id="fy"><option value="2025-26">FY 2025-26 / AY 2026-27</option><option value="2024-25">FY 2024-25 / AY 2025-26</option></select><small>Only validated financial years are offered.</small></div>
+    </section>
+    <nav aria-label="Workflow"><span>01 &nbsp; Import lots</span><span>02 &nbsp; Review gains</span><span>03 &nbsp; Export working paper</span></nav>
+    <section class="panel" aria-labelledby="import-heading">
+      <div class="section-top"><div><p class="eyebrow">START WITH YOUR SOURCE</p><h2 id="import-heading">Bring the numbers. Keep control.</h2></div><span class="pill">Groww XLSX + CSV</span></div>
+      <p class="muted">Import Groww Stock Capital Gains or Mutual Fund Capital Gains XLSX reports, or verified canonical CSV lots. Do not use P&amp;L reports: realised trades overlap, and unrealised holdings are not disposals.</p>
+      <div class="import-grid">
+        <label class="upload" for="files"><span class="upload-icon" aria-hidden="true">+</span><strong>Choose Groww CG XLSX or CSV files</strong><span>Up to 10 files / 2 MB each / 10,000 total rows</span><input id="files" type="file" accept=".csv,.xlsx" multiple></label>
+        <div class="guide"><h3>Broker figures, without assumptions</h3><p>Native reports show gross gains and provisional broker totals. Missing expense/STT/cost-history confirmations remain pending, not invented. Use verified canonical lots for working-paper inclusion.</p><a href="./samples/canonical-demo.csv" download>Download canonical sample CSV</a><button id="sample" class="ghost">Try synthetic sample</button><small>Sample includes one intentionally blocked lot.</small></div>
+      </div>
+      <p id="file-summary" class="muted">No files selected. Data stays in memory until you reset or close this tab.</p>
+      <div class="actions"><button id="review" class="primary" disabled>Review capital gains</button><button id="reset" class="ghost">Clear session</button></div>
+      <p class="runtime-note">The first review downloads the public Python runtime; XLSX import/export loads the runtime's package installer and bundled openpyxl wheels. Internet is needed for initial loading. No analytics, account, local storage or financial-data requests.</p>
+      <p id="status" role="status" aria-live="polite"></p>
+      <div id="error" class="error" role="alert" hidden></div>
+    </section>
+    <section id="results" hidden aria-labelledby="results-heading">
+      <div class="results-top"><div><p class="eyebrow">YOUR WORKING PAPER</p><h2 id="results-heading">Review before you file.</h2></div><button id="export" class="primary">Download XLSX</button></div>
+      <p id="review-state" class="notice"></p>
+      <ul id="manifest" class="muted"></ul>
+      <div class="panel table-panel">
+        <h3>ITR-2 filing review / candidate schedule destinations</h3>
+        <p id="filing-year" class="muted"></p>
+        <p class="muted">INR rupees, not lakhs. READY_WORKING means attested inputs, not a filing-ready return. Broker figures remain PROVISIONAL. Positive gains and losses are shown separately; no annual threshold, loss set-off or final taxable amount is computed.</p>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="ITR-2 candidate filing groups">
+          <table><caption>Observed groups only; no group does not mean a verified zero. The workbook adds a filing review and machine-readable field map with unknowns left blank.</caption><thead><tr><th>Candidate schedule</th><th>Period</th><th>Evidence basis</th><th>Status</th><th>Positive gains INR</th><th>Losses INR</th><th>Net INR</th></tr></thead><tbody id="filing-groups"></tbody></table>
+        </div>
+      </div>
+      <div id="broker-summary" class="panel" hidden>
+        <h3>Groww-reported gains / provisional, not verified working-paper totals</h3>
+        <p class="muted">Only supported, reconciled, non-duplicate equity rows within the selected FY enter this separate summary. Fees, STT and acquisition history still need verification. Debt, intraday, ambiguous and out-of-year rows are excluded. Do not add these figures to canonical totals for the same disposals.</p>
+        <div class="kpis"><article><span>BROKER STCG / INR</span><strong id="broker-stcg"></strong></article><article><span>BROKER LTCG / INR</span><strong id="broker-ltcg"></strong></article><article><span>PROVISIONAL ROWS</span><strong id="broker-count"></strong></article></div>
+      </div>
+      <h3>Working-paper totals / confirmed canonical lots only</h3>
+      <div class="kpis"><article><span>NET STCG / INR</span><strong id="stcg"></strong><small>Included canonical lots only</small></article><article><span>NET LTCG / INR</span><strong id="ltcg"></strong><small>Before exemptions or set-off</small></article><article><span>INCLUDED LOTS</span><strong id="included"></strong><small>Based on supplied attestations</small></article><article><span>NEEDS REVIEW / EXCLUDED</span><strong id="blocked"></strong><small>Not included in gain totals</small></article></div>
+      <div class="panel table-panel"><div class="table-scroll" tabindex="0" role="region" aria-label="Disposed lots review"><table><caption>Disposed-lot review (first 200 rows; workbook includes all rows)</caption><thead><tr><th>Asset / source</th><th>Acquired / sold</th><th>Status / term</th><th>Gain INR</th><th>Review notes</th></tr></thead><tbody id="lots"></tbody></table></div></div>
+    </section>
+    <section class="limitations"><h2>A working paper, not a tax return.</h2><p>Groww stock and mutual-fund capital-gains layouts only; other broker-native formats and P&amp;L reports are rejected. Only delivery-based listed Indian equity and verified equity-oriented mutual funds are in scope. Holdings over 12 calendar months are classified as long-term. No tax liability, 111A/112A eligibility certification, grandfathering, corporate-action reconstruction, FIFO matching, debt-fund calculations, F&amp;O, intraday, AIS integration or official ITR upload schema.</p><p>FY 2024-25 and FY 2025-26 only. Native rows remain pending verification and outside confirmed working-paper totals. Check every source against the broker report and consult your tax adviser. <a href="https://pib.gov.in/PressReleasePage.aspx?PRID=2036604&amp;reg=3&amp;lang=2" target="_blank" rel="noreferrer">CBDT holding-period reference</a>.</p></section>
+  </main>
+  <footer>ITR Stock Assist / Private by design. Transparent by default. / v0.3</footer>
+</body>
+</html>

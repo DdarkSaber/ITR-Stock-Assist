@@ -1,0 +1,5 @@
+lot_id,broker,asset_name,isin,asset_type,buy_date,sell_date,quantity,cost_inr,proceeds_inr,transfer_expenses_inr,stt_paid,corporate_action,cost_basis_confirmed
+demo-short,Demo Broker,Synthetic Equity A,INE000A01001,listed_equity,2025-05-10,2025-12-10,10,10000.10,12500.35,25.05,yes,none,yes
+demo-long,Demo Broker,Synthetic Equity Fund,INF000A01001,equity_mf,2023-06-01,2025-07-01,125.123456,20000.00,27500.00,0.00,yes,none,yes
+demo-loss,Demo Broker,Synthetic Equity B,INE000B01002,listed_equity,2025-04-02,2026-03-10,5,5000.00,4500.00,10.00,yes,none,yes
+demo-review,Demo Broker,Unclassified Synthetic Fund,INF000B01002,unknown,2024-05-01,2025-09-01,20,,6500.00,0.00,yes,unknown,no
