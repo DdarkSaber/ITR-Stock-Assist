@@ -269,3 +269,13 @@ def test_intraday_rows_trigger_business_income_warning_in_result_and_workbook():
                data["business_income_warning"] for row in book["Summary"].iter_rows())
     assert any(row[0].value == "Intraday warning" and row[1].value ==
                data["business_income_warning"] for row in book["Filing review"].iter_rows())
+
+
+def test_groww_zero_cost_and_sale_are_flagged_for_manual_confirmation():
+    data = review([payload(stock_book({"Short Term trades": [stock_row(**{
+        "Buy value": 0, "Sell value": 0, "Realised P&L": 0,
+    })]}))], "2025-26")
+    record = data["records"][0]
+    assert record["status"] == "BLOCKED"
+    assert any("likely rights entitlement or corporate action - confirm" in issue
+               for issue in record["issues"])

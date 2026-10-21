@@ -27,6 +27,7 @@ def test_sample_import_to_xlsx():
     assert (data["included"], data["blocked"]) == (3, 1)
     assert data["ay"] == "2026-27"
     book = load_workbook(io.BytesIO(workbook_bytes(data)))
+    assert book["Summary"]["B1"].value == "Capital-gains working paper v0.3.1"
     assert book.sheetnames == [
         "Filing review", "Filing groups", "Filing map", "References",
         "Summary", "Disposed lots", "Review issues", "Source rows", "Import manifest",
@@ -117,6 +118,16 @@ def test_spreadsheet_formula_injection_is_literal():
         for row in sheet:
             assert all(cell.data_type != "f" for cell in row)
     assert book["Source rows"]["E2"].value.startswith("=HYPERLINK")
+
+
+def test_zero_cost_and_sale_are_flagged_as_possible_rights_or_corporate_action():
+    data = review([file_for(cost_inr="0", proceeds_inr="0")], "2025-26")
+    record = data["records"][0]
+    assert record["status"] == "BLOCKED"
+    assert "likely rights entitlement or corporate action - confirm" in " ".join(record["issues"])
+    book = load_workbook(io.BytesIO(workbook_bytes(data)))
+    assert any("likely rights entitlement or corporate action - confirm" in row[3].value
+               for row in book["Review issues"].iter_rows(min_row=2))
 
 
 def test_file_and_year_limits():

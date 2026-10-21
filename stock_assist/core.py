@@ -7,7 +7,7 @@ import json
 import re
 from collections import Counter
 from datetime import date
-from decimal import Decimal, localcontext
+from decimal import Decimal, InvalidOperation, localcontext
 
 YEARS = {"2024-25": 2024, "2025-26": 2025}
 HEADERS = [
@@ -191,6 +191,16 @@ def _review(files, fy):
                 amounts[field] = _money(raw[field], field)
             except ValueError as exc:
                 issues.append(str(exc))
+        try:
+            zero_cost_and_sale = (
+                Decimal(raw["cost_inr"]) == 0 and Decimal(raw["proceeds_inr"]) == 0
+            )
+        except InvalidOperation:
+            zero_cost_and_sale = False
+        if zero_cost_and_sale:
+            issues.append(
+                "Both cost and sale value are 0: likely rights entitlement or corporate action - confirm."
+            )
         outside = sell is not None and not start <= sell <= end
         if outside:
             issues.append(f"Sale outside FY {fy}; excluded from this year's totals.")
@@ -244,7 +254,7 @@ def workbook_bytes(result):
     book = Workbook()
     book.remove(book.active)
     metadata = [
-        ["ITR Stock Assist", "Capital-gains working paper v0.3"],
+        ["ITR Stock Assist", "Capital-gains working paper v0.3.1"],
         ["Financial year", result["fy"]], ["Assessment year", result["ay"]],
         ["Review state", "EMPTY - no disposed lots" if not result["records"] else
          "INCOMPLETE - blocked / pending rows" if result["blocked"] else "Review required"],

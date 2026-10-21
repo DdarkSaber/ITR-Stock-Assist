@@ -1,12 +1,12 @@
 # Working-paper XLSX contract 1.0.0
 
-App version 0.3; reviewed 16 October 2026. **Not an official ITR JSON/CSV schema or filing-ready return.** This contract supports a future independent reader; no combined-excel integration or step-by-step filing project is included.
+App version 0.3.1; reviewed 16 October 2026. **Not an official ITR JSON/CSV schema or filing-ready return.** This contract supports a future independent reader; no combined-excel integration or step-by-step filing project is included.
 
 ## Human review
 
 Open **Filing review** first. It identifies FY/AY, completeness, rupee units, year-specific CG/112A destinations and unresolved filing questions.
 
-**Filing groups** contains observed groups only, keyed by evidence basis, holding term and transfer period. It separates gross consideration, source/attested cost, confirmed expenses, positive gains, negative losses and net gain. Native fees are blank; native gains are broker-reported, not confirmed gains after allowable expenses. An empty group set is not a nil-return assertion. Source lookup points to per-lot **Filing map** rows, avoiding oversized/truncated lists in Excel cells.
+**Filing groups** contains observed groups only, keyed by evidence basis, holding term and transfer period, plus a provisional **Non-equity (Schedule CG A5, slab rate)** group for Groww debt-fund and flagged INF fund/ETF rows. The non-equity group maps to Table F row 3. It separates gross consideration, source/attested cost, confirmed expenses, positive gains, negative losses and net gain. Native fees are blank; native gains are broker-reported, not confirmed gains after allowable expenses. Exact amounts have adjacent informational whole-rupee rounded columns; round the final total only, not individual lots. An empty group set is not a nil-return assertion. Source lookup points to per-lot **Filing map** rows, avoiding oversized/truncated lists in Excel cells.
 
 **Summary**, **Disposed lots**, **Review issues**, **Source rows**, **Import manifest** preserve the original review evidence. **References** records primary sources. No source status is upgraded by formatting.
 
@@ -39,6 +39,7 @@ First row is the exact header. One row is **field evidence for one source dispos
 | `cg.transfer_expenses` | ST `DeductSec48.ExpOnTrans`; LT `ExpExclCnctTransfer`. Allowable transfer expenses excluding STT. Blank for native reports. |
 | `cg.balance_before_adjustments` | Working gain after confirmed cost/expenses: ST `BalanceCG`; LT `Balance`. Blank for native reports. It is **not taxable income** and does not settle all required schema fields or eligibility. |
 | `app.broker_reported_gain` | Native reconciliation amount only; **no direct official field mapping**. Never substitute it for a confirmed balance or add it to canonical gains. |
+| `cg.non_equity_net` | Groww-reported net for a debt-fund or flagged INF fund/ETF row; provisional candidate for Schedule CG A5, Table F row 3 (`AccruOrRecOfCG`), not a computed tax amount. |
 | `cg.section94_adjustment` | ST `LossSec94of7Or94of8`; unknown, blank. |
 | `cg.capital_gain_after_adjustments` | ST `CapgainonAssets`; unknown, blank pending final adjustments. |
 | `112a.isin` | Actual `ISINCode`, or blank if absent. A scheme code is not an ISIN. |

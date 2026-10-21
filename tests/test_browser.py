@@ -35,6 +35,7 @@ def test_browser_import_download_and_reset(tmp_path):
             page.on("pageerror", lambda error: failures.append(str(error)))
             page.on("request", lambda request: requests.append((request.url, request.method, request.post_data)))
             page.goto(f"http://127.0.0.1:{server.server_port}", wait_until="networkidle")
+            expect(page.locator("footer")).to_contain_text("v0.3.1")
             cold_file = payload(stock_book({"Short Term trades": [stock_row()]}), "first-native.xlsx")
             page.locator("#files").set_input_files({
                 "name": cold_file["name"], "mimeType": "application/octet-stream",
@@ -165,6 +166,21 @@ def test_browser_import_download_and_reset(tmp_path):
             assert any(row[0].value == "Intraday warning" and row[1].value ==
                        "Intraday = speculative business income; ITR-3 likely required."
                        for row in non_equity_book["Filing review"].iter_rows())
+            zero_file = payload(stock_book({"Short Term trades": [stock_row(**{
+                "Buy value": 0, "Sell value": 0, "Realised P&L": 0,
+            })]}), "synthetic-zero.xlsx")
+            page.locator("#files").set_input_files({
+                "name": zero_file["name"], "mimeType": "application/octet-stream",
+                "buffer": base64.b64decode(zero_file["base64"]),
+            })
+            page.locator("#review").click()
+            expect(page.locator("#lots")).to_contain_text(
+                "likely rights entitlement or corporate action - confirm", timeout=30000)
+            with page.expect_download(timeout=30000) as zero_download:
+                page.locator("#export").click()
+            zero_book = load_workbook(io.BytesIO(Path(zero_download.value.path()).read_bytes()))
+            assert any("likely rights entitlement or corporate action - confirm" in row[3].value
+                       for row in zero_book["Review issues"].iter_rows(min_row=2))
             empty_file = payload(stock_book(), "empty.xlsx")
             page.locator("#files").set_input_files({
                 "name": empty_file["name"], "mimeType": "application/octet-stream",
