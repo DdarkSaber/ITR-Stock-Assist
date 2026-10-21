@@ -153,7 +153,7 @@ def test_browser_import_download_and_reset(tmp_path):
                 Path(non_equity_download.value.path()).read_bytes()))
             assert non_equity_book["Filing groups"]["A2"].value == \
                 "Non-equity (Schedule CG A5, slab rate)"
-            assert non_equity_book["Filing groups"]["H2"].value is None
+            assert non_equity_book["Filing groups"]["J2"].value is None
             non_equity_map = list(non_equity_book["Filing map"].values)
             assert {row[4] for row in non_equity_map[1:]} >= {
                 "cg.consideration", "cg.acquisition_cost", "cg.transfer_expenses",

@@ -6,7 +6,7 @@ The exported mapping contract is documented in docs/workbook-contract.md.
 
 from collections import defaultdict
 from datetime import date
-from decimal import Decimal, localcontext
+from decimal import Decimal, ROUND_HALF_UP, localcontext
 
 FORMAT_VERSION = "1.0.0"
 RESEARCH_DATE = "2026-10-16"
@@ -48,6 +48,12 @@ def period(fy, sell):
     if fy == "2024-25":
         return "BE" if sell < "2024-07-23" else "AE"
     return "FULL_FY"
+
+
+def rounded_rupees(value):
+    if value is None:
+        return None
+    return int(Decimal(value).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
 
 def destination(term, transfer_period):
@@ -218,7 +224,7 @@ def workbook_sheets(result):
         ["Unknown versus zero", "Blank = unknown/not computed, never zero. An absent group does not mean no gains. Summary 0.00 means no included contribution, not a verified nil return."],
         ["Losses / annual aggregation", "Positive gains and negative losses are separate in Filing groups. Net gain is not taxable gain. No current-year or brought-forward set-off, carry-forward or Schedule SI tax computation."],
         ["112A annual threshold", "No threshold deducted per lot, broker, file or reporting period. Any annual exemption/tax computation requires eligible aggregate income and full-return loss review."],
-        ["Rounding", "Official schemas mix integer-rupee fields and decimal fields. This working paper retains exact source precision; reconcile at final aggregate/utility stage, not by rounding each lot."],
+        ["Rounding", "Official schemas mix integer-rupee fields and decimal fields. Exact group amounts are retained beside informational whole-rupee rounded group totals. Round the final total only; never round individual lots or sum rounded per-lot values."],
         ["Acquisition / STT / charges", UNRESOLVED],
         ["ISIN / scheme identity", "Actual ISIN and scheme code are distinct. Groww MF has no ISIN. For post-Jan-2018 acquisitions official schemas describe CONSOLIDATED / INNOTREQUIRD; app does not fabricate an ISIN or build an upload."],
         ["Grandfathering", "Acquisitions on/before 31 Jan 2018 remain blocked: actual cost, 31 Jan 2018 FMV and proceeds must be verified; no automatic grandfathering."],
@@ -233,16 +239,23 @@ def workbook_sheets(result):
         overview.insert(4, ["Intraday warning", result["business_income_warning"]])
     groups = [[
         "Candidate destination", "Transfer period", "Evidence basis", "Status", "Lots",
-        "Gross consideration INR", "Source / attested cost INR", "Confirmed transfer expenses INR",
-        "Positive gains INR", "Losses INR (negative)", "Net gain INR (not taxable income)",
+        "Gross consideration INR", "Gross consideration INR (rounded INR)",
+        "Source / attested cost INR", "Source / attested cost INR (rounded INR)",
+        "Confirmed transfer expenses INR", "Confirmed transfer expenses INR (rounded INR)",
+        "Positive gains INR", "Positive gains INR (rounded INR)",
+        "Losses INR (negative)", "Losses INR (rounded INR)",
+        "Net gain INR (not taxable income)", "Net gain INR (rounded INR)",
         "Official candidate container", "Source lookup", "Important",
     ]]
     for group in filing["groups"]:
         groups.append([
-            group[k] for k in (
-                "schedule", "period", "basis", "status", "lots", "proceeds", "cost",
-                "expenses", "positive_gains", "losses", "net", "container",
-            )
+            group["schedule"], group["period"], group["basis"], group["status"], group["lots"],
+            group["proceeds"], rounded_rupees(group["proceeds"]),
+            group["cost"], rounded_rupees(group["cost"]),
+            group["expenses"], rounded_rupees(group["expenses"]),
+            group["positive_gains"], rounded_rupees(group["positive_gains"]),
+            group["losses"], rounded_rupees(group["losses"]),
+            group["net"], rounded_rupees(group["net"]), group["container"],
         ] + [f"Filing map: basis={group['basis']}, transfer_period={group['period']}, "
              f"schedule={group['schedule']}. Each lot retains file/sheet/row.", CAUTION])
     references = [

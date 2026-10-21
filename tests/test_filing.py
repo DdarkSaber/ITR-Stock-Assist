@@ -52,7 +52,7 @@ def test_unknown_native_fields_are_blank_and_scheme_code_is_not_isin():
     assert next(r for r in rows if r["field_id"] == "cg.transfer_expenses")["value"] is None
     assert next(r for r in rows if r["field_id"] == "cg.balance_before_adjustments")["value"] is None
     book = load_workbook(io.BytesIO(workbook_bytes(data)))
-    assert book["Filing groups"]["H2"].value is None
+    assert book["Filing groups"]["J2"].value is None
     assert book["Filing review"]["B4"].value == "INCOMPLETE"
     assert book["Filing review"]["B3"].value == "2026-27"
 
@@ -150,3 +150,23 @@ def test_non_equity_groww_rows_map_to_schedule_cg_a5_table_f_row_3():
     book = load_workbook(io.BytesIO(workbook_bytes(data)))
     assert book["Filing groups"]["A2"].value == group["schedule"]
     assert book["Filing map"].max_row > 1
+
+
+def test_filing_groups_show_whole_rupee_rounding_next_to_exact_amounts():
+    data = review([file_for(
+        cost_inr="1.49", proceeds_inr="3.51", transfer_expenses_inr="0.51",
+    )], "2025-26")
+    book = load_workbook(io.BytesIO(workbook_bytes(data)))
+    groups = book["Filing groups"]
+    columns = {cell.value: cell.column for cell in groups[1]}
+    assert groups.cell(2, columns["Gross consideration INR"]).value == "3.51"
+    assert groups.cell(2, columns["Gross consideration INR (rounded INR)"]).value == 4
+    assert groups.cell(2, columns["Source / attested cost INR"]).value == "1.49"
+    assert groups.cell(2, columns["Source / attested cost INR (rounded INR)"]).value == 1
+    assert groups.cell(2, columns["Confirmed transfer expenses INR"]).value == "0.51"
+    assert groups.cell(2, columns["Confirmed transfer expenses INR (rounded INR)"]).value == 1
+    assert groups.cell(2, columns["Net gain INR (not taxable income)"]).value == "1.51"
+    assert groups.cell(2, columns["Net gain INR (rounded INR)"]).value == 2
+    note = next(row[1].value for row in book["Filing review"].iter_rows()
+                if row[0].value == "Rounding")
+    assert "round the final total only" in note.casefold()
