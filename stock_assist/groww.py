@@ -250,10 +250,15 @@ def _reconcile(record, cost, proceeds, broker_gain):
 
 def _stock(values, section):
     r = _base()
+    isin = _text(values["ISIN"])
+    fund_unit = isin.upper().startswith("INF")
     r["raw"].update(broker="Groww", asset_name=_text(values["Stock name"]),
-                    isin=_text(values["ISIN"]),
-                    asset_type="listed_equity" if section in ("STCG", "LTCG") else "unknown")
+                    isin=isin,
+                    asset_type=("non_equity" if fund_unit else
+                                "listed_equity" if section in ("STCG", "LTCG") else "unknown"))
     r["broker_term"] = section if section in ("STCG", "LTCG") else ""
+    if fund_unit:
+        r["adapter_issues"].append("Fund/ETF unit: confirm equity-oriented status")
     if section not in ("STCG", "LTCG"):
         r["adapter_issues"].append(f"Unsupported stock report section: {section or 'unknown'}; "
                                    "intraday/other trades are excluded.")

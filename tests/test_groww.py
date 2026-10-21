@@ -247,3 +247,13 @@ def test_out_of_year_and_debt_have_no_computed_equity_term():
     data = review([stock, fund], "2025-26")
     assert all(r["term"] == "" for r in data["records"])
     assert data["records"][0]["broker_term"] == "STCG"
+
+
+def test_instrument_isins_are_flagged_as_non_equity_until_oriented_status_is_confirmed():
+    data = review([payload(stock_book({"Short Term trades": [
+        stock_row(**{"ISIN": "INF000A01001"}),
+    ]}))], "2025-26")
+    record = data["records"][0]
+    assert record["raw"]["asset_type"] == "non_equity"
+    assert "Fund/ETF unit: confirm equity-oriented status" in record["issues"]
+    assert data["broker_review"] == 0
