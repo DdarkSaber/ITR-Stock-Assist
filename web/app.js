@@ -20,6 +20,8 @@ function invalidate() {
   revision++;
   result = null;
   $("results").hidden = true;
+  $("intraday-warning").hidden = true;
+  $("intraday-warning").textContent = "";
   $("lots").replaceChildren();
   $("manifest").replaceChildren();
   $("filing-groups").replaceChildren();
@@ -100,6 +102,8 @@ function render(data) {
   $("broker-count").textContent = data.broker_review;
   $("broker-summary").hidden = !data.imports.some(item => item.format !== "canonical_csv");
   $("filing-year").textContent = data.filing.year_note;
+  $("intraday-warning").textContent = data.business_income_warning;
+  $("intraday-warning").hidden = !data.intraday_present;
   $("filing-groups").replaceChildren(...data.filing.groups.map(group => {
     const tr = document.createElement("tr");
     for (const value of [group.schedule, group.period, group.basis, group.status,

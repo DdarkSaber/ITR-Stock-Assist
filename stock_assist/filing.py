@@ -229,6 +229,8 @@ def workbook_sheets(result):
         ["Schema evidence", filing["schema_url"]],
         ["References reviewed", RESEARCH_DATE + "; docs/research-2026-10-16.md"],
     ]
+    if result["intraday_present"]:
+        overview.insert(4, ["Intraday warning", result["business_income_warning"]])
     groups = [[
         "Candidate destination", "Transfer period", "Evidence basis", "Status", "Lots",
         "Gross consideration INR", "Source / attested cost INR", "Confirmed transfer expenses INR",

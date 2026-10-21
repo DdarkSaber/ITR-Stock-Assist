@@ -259,6 +259,7 @@ def _stock(values, section):
     if fund_unit:
         r["filing_group"] = "non_equity"
     r["broker_term"] = section if section in ("STCG", "LTCG") else ""
+    r["intraday"] = section == "intraday"
     if fund_unit:
         r["adapter_issues"].append("Fund/ETF unit: confirm equity-oriented status")
     if section not in ("STCG", "LTCG"):

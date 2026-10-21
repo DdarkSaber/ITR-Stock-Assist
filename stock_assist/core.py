@@ -21,6 +21,7 @@ DISCLAIMER = (
     "upload file. Review all exclusions and reconcile against broker reports. "
     "No exemptions, tax rates, loss set-off, carry-forward, surcharge or cess computed."
 )
+BUSINESS_INCOME_WARNING = "Intraday = speculative business income; ITR-3 likely required."
 MAX_BYTES = 2_000_000
 MAX_ROWS = 10_000
 
@@ -225,6 +226,10 @@ def _review(files, fy):
         "broker_totals": {key: f"{value:.2f}" for key, value in broker_totals.items()},
         "broker_review": sum(r["broker_summary_included"] for r in records),
         "imports": imports,
+        "intraday_present": any(record.get("intraday", False) for record in records),
+        "business_income_warning": (
+            BUSINESS_INCOME_WARNING if any(record.get("intraday", False) for record in records) else ""
+        ),
         "disclaimer": DISCLAIMER, "rule_source": RULE_SOURCE,
     }
     from stock_assist.filing import filing_review
@@ -263,6 +268,8 @@ def workbook_bytes(result):
          "working-paper totals above. Canonical and native representations of the same lots "
          "must not be added together."],
     ]
+    if result["intraday_present"]:
+        metadata.append(["Intraday warning", result["business_income_warning"]])
     from stock_assist.filing import workbook_sheets
     sheets = {
         **workbook_sheets(result),

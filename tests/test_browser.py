@@ -129,14 +129,19 @@ def test_browser_import_download_and_reset(tmp_path):
             debt_file = payload(mf_book({"Debt (Specified - Other than Equity) Category": [
                 mf_row(Category="Debt"),
             ]}), "synthetic-debt.xlsx")
+            intraday_file = payload(stock_book({"Intraday trades": [stock_row()]}),
+                                    "synthetic-intraday.xlsx")
             page.locator("#files").set_input_files([{
                 "name": f["name"], "mimeType": "application/octet-stream",
                 "buffer": base64.b64decode(f["base64"]),
-            } for f in (etf_file, debt_file)])
+            } for f in (etf_file, debt_file, intraday_file)])
             page.locator("#review").click()
             expect(page.locator("#filing-groups")).to_contain_text(
                 "Non-equity (Schedule CG A5, slab rate)", timeout=30000)
             expect(page.locator("#filing-groups")).to_contain_text("Not reported")
+            expect(page.locator("#intraday-warning")).to_be_visible()
+            expect(page.locator("#intraday-warning")).to_have_text(
+                "Intraday = speculative business income; ITR-3 likely required.")
             with page.expect_download(timeout=30000) as non_equity_download:
                 page.locator("#export").click()
             non_equity_book = load_workbook(io.BytesIO(
@@ -149,6 +154,12 @@ def test_browser_import_download_and_reset(tmp_path):
                 "cg.consideration", "cg.acquisition_cost", "cg.transfer_expenses",
                 "cg.non_equity_net",
             }
+            assert any(row[0].value == "Intraday warning" and row[1].value ==
+                       "Intraday = speculative business income; ITR-3 likely required."
+                       for row in non_equity_book["Summary"].iter_rows())
+            assert any(row[0].value == "Intraday warning" and row[1].value ==
+                       "Intraday = speculative business income; ITR-3 likely required."
+                       for row in non_equity_book["Filing review"].iter_rows())
             empty_file = payload(stock_book(), "empty.xlsx")
             page.locator("#files").set_input_files({
                 "name": empty_file["name"], "mimeType": "application/octet-stream",

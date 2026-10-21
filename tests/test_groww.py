@@ -257,3 +257,15 @@ def test_instrument_isins_are_flagged_as_non_equity_until_oriented_status_is_con
     assert record["raw"]["asset_type"] == "non_equity"
     assert "Fund/ETF unit: confirm equity-oriented status" in record["issues"]
     assert data["broker_review"] == 0
+
+
+def test_intraday_rows_trigger_business_income_warning_in_result_and_workbook():
+    data = review([payload(stock_book({"Intraday trades": [stock_row()]}))], "2025-26")
+    assert data["intraday_present"] is True
+    assert data["business_income_warning"] == \
+        "Intraday = speculative business income; ITR-3 likely required."
+    book = load_workbook(io.BytesIO(workbook_bytes(data)))
+    assert any(row[0].value == "Intraday warning" and row[1].value ==
+               data["business_income_warning"] for row in book["Summary"].iter_rows())
+    assert any(row[0].value == "Intraday warning" and row[1].value ==
+               data["business_income_warning"] for row in book["Filing review"].iter_rows())
