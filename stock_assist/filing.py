@@ -5,6 +5,7 @@ The exported mapping contract is documented in docs/workbook-contract.md.
 """
 
 from collections import defaultdict
+from datetime import date
 from decimal import Decimal, localcontext
 
 FORMAT_VERSION = "1.0.0"
@@ -24,6 +25,17 @@ UNRESOLVED = (
     "buybacks, exemptions and current/brought-forward losses separately. No unknown "
     "filing value is assumed to be zero."
 )
+NON_EQUITY_SCHEDULE = "Non-equity (Schedule CG A5, slab rate)"
+NON_EQUITY_CONTAINER = "ScheduleCG.A5.TableF[3]"
+NON_EQUITY_ALLOWED_ISSUES = {
+    "Fund/ETF unit: confirm equity-oriented status",
+    "Debt fund: Schedule CG A5 slab-rate review.",
+    "asset_type: only listed_equity and verified equity_mf are supported.",
+    "Broker report only: verify STT, acquisition/corporate-action history and "
+    "allowable costs/fees. Transfer expenses are not supplied per lot; no zero "
+    "expense or tax-eligibility confirmation has been invented. Use a verified "
+    "canonical CSV for working-paper inclusion.",
+}
 MAP_HEADERS = [
     "format_version", "fy", "ay", "record_id", "field_id", "schedule",
     "official_container", "official_field", "value", "unit", "status", "reason",
@@ -52,13 +64,32 @@ def _provenance(record):
     }
 
 
+def _non_equity_candidate(record, result):
+    if record.get("filing_group") != "non_equity" or not record.get("native"):
+        return False
+    if not record.get("broker_gain") or not record["raw"]["cost_inr"] or not record["raw"]["proceeds_inr"]:
+        return False
+    try:
+        sold = date.fromisoformat(record["raw"]["sell_date"])
+    except ValueError:
+        return False
+    year_start = int(result["fy"][:4])
+    start = date(year_start, 4, 1)
+    end = date(year_start + 1, 3, 31)
+    if not start <= sold <= end:
+        return False
+    return all(issue in NON_EQUITY_ALLOWED_ISSUES for issue in record["issues"])
+
+
 def filing_review(result):
     """Separate observed canonical and broker groups; never synthesize empty zeros."""
     grouped = defaultdict(list)
     for record in result["records"]:
-        if record["status"] == "INCLUDED" or record["broker_summary_included"]:
+        non_equity = _non_equity_candidate(record, result)
+        if record["status"] == "INCLUDED" or record["broker_summary_included"] or non_equity:
             basis = "BROKER_REPORTED" if record.get("native") else "ATTESTED_CANONICAL"
-            grouped[(basis, record["term"], period(result["fy"], record["raw"]["sell_date"]))].append(record)
+            term = "NON_EQUITY" if non_equity else record["term"]
+            grouped[(basis, term, period(result["fy"], record["raw"]["sell_date"]))].append(record)
     groups = []
     with localcontext() as context:
         context.prec = 80
@@ -67,7 +98,10 @@ def filing_review(result):
             gains = [Decimal(r["broker_gain"] if native else r["gain"]) for r in records]
             def total(field):
                 return format(sum((Decimal(r["raw"][field]) for r in records), Decimal(0)), "f")
-            schedule, container = destination(term, transfer_period)
+            schedule, container = (
+                (NON_EQUITY_SCHEDULE, NON_EQUITY_CONTAINER)
+                if term == "NON_EQUITY" else destination(term, transfer_period)
+            )
             groups.append({
                 "basis": basis, "term": term, "period": transfer_period,
                 "schedule": schedule, "container": container, "lots": len(records),
@@ -97,10 +131,14 @@ def mapping_rows(result):
     for index, record in enumerate(result["records"], 1):
         raw = record["raw"]
         native = record.get("native", False)
-        eligible = record["status"] == "INCLUDED" or record["broker_summary_included"]
+        non_equity = _non_equity_candidate(record, result)
+        eligible = record["status"] == "INCLUDED" or record["broker_summary_included"] or non_equity
         status = "PROVISIONAL" if native else "READY_WORKING"
         transfer_period = period(result["fy"], raw["sell_date"]) if eligible else ""
-        schedule, container = destination(record["term"], transfer_period) if eligible else ("", "")
+        schedule, container = (
+            (NON_EQUITY_SCHEDULE, NON_EQUITY_CONTAINER)
+            if non_equity else destination(record["term"], transfer_period) if eligible else ("", "")
+        )
         reason = " | ".join(record["issues"]) if native or not eligible else CAUTION
         basis = "BROKER_REPORTED" if native else "ATTESTED_CANONICAL"
         def row(field_id, official_field, value, unit="INR", state=status, note=reason):
@@ -113,6 +151,18 @@ def mapping_rows(result):
             ]
         if not eligible:
             yield row("app.excluded_lot", "", None, "", "BLOCKED", reason)
+            continue
+        if non_equity:
+            yield row("cg.consideration", "FullValueOfConsideration", raw["proceeds_inr"], note=reason)
+            yield row("cg.acquisition_cost", "CostOfAcquisition", raw["cost_inr"], note=reason)
+            yield row(
+                "cg.transfer_expenses", "ExpenditureOnTransfer", None,
+                state="NOT_COMPUTED", note="Groww does not report allowable transfer expenses per lot.",
+            )
+            yield row(
+                "cg.non_equity_net", "AccruOrRecOfCG", record["broker_gain"],
+                note="Broker-reported net; provisional and before independent tax review. " + reason,
+            )
             continue
         short = record["term"] == "STCG"
         yield row("cg.consideration", "FullConsideration" if short else "TotSaleValue", raw["proceeds_inr"])

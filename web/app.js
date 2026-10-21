@@ -103,6 +103,7 @@ function render(data) {
   $("filing-groups").replaceChildren(...data.filing.groups.map(group => {
     const tr = document.createElement("tr");
     for (const value of [group.schedule, group.period, group.basis, group.status,
+      group.proceeds, group.cost, group.expenses ?? "Not reported",
       group.positive_gains, group.losses, group.net]) {
       const td = document.createElement("td");
       td.textContent = value;

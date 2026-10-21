@@ -121,3 +121,32 @@ def test_2026_stcg_never_uses_before_flag_and_retains_official_spelling():
     data = review([file_for()], "2025-26")
     assert all(r["official_container"].endswith("EquityMFonSTTDtls") for r in mapped(data))
     assert next(r for r in mapped(data) if r["field_id"] == "cg.acquisition_cost")["official_field"] == "DeductSec48.AquisitCost"
+
+
+def test_non_equity_groww_rows_map_to_schedule_cg_a5_table_f_row_3():
+    etf = payload(stock_book({"Short Term trades": [
+        stock_row(**{"ISIN": "INF000A01001"}),
+    ]}), "synthetic-etf.xlsx")
+    debt = payload(mf_book({"Debt (Specified - Other than Equity) Category": [
+        mf_row(Category="Debt"),
+    ]}), "synthetic-debt.xlsx")
+    data = review([etf, debt], "2025-26")
+    group = data["filing"]["groups"][0]
+    assert len(data["filing"]["groups"]) == 1
+    assert group["schedule"] == "Non-equity (Schedule CG A5, slab rate)"
+    assert group["container"] == "ScheduleCG.A5.TableF[3]"
+    assert group["lots"] == 2
+    assert group["net"] == "223.66"
+    assert group["proceeds"] == str(
+        Decimal(data["records"][0]["raw"]["proceeds_inr"])
+        + Decimal(data["records"][1]["raw"]["proceeds_inr"])
+    )
+    rows = mapped(data)
+    assert all(row["schedule"] == group["schedule"] for row in rows)
+    assert {row["field_id"] for row in rows} >= {
+        "cg.consideration", "cg.acquisition_cost", "cg.transfer_expenses",
+        "cg.non_equity_net",
+    }
+    book = load_workbook(io.BytesIO(workbook_bytes(data)))
+    assert book["Filing groups"]["A2"].value == group["schedule"]
+    assert book["Filing map"].max_row > 1

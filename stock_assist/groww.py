@@ -256,6 +256,8 @@ def _stock(values, section):
                     isin=isin,
                     asset_type=("non_equity" if fund_unit else
                                 "listed_equity" if section in ("STCG", "LTCG") else "unknown"))
+    if fund_unit:
+        r["filing_group"] = "non_equity"
     r["broker_term"] = section if section in ("STCG", "LTCG") else ""
     if fund_unit:
         r["adapter_issues"].append("Fund/ETF unit: confirm equity-oriented status")
@@ -281,13 +283,19 @@ def _stock(values, section):
 
 def _mf(values, section):
     r = _base()
+    debt = section == "debt"
     equity = section == "equity_mf" and _text(values["Category"]) == "Equity"
     scheme = _text(values["Scheme Code"])
     r["scheme_code"] = scheme
+    if debt:
+        r["filing_group"] = "non_equity"
     r["raw"].update(broker="Groww", asset_name=_text(values["Scheme Name"]),
-                    asset_type="equity_mf" if equity else "unknown")
+                    asset_type="non_equity" if debt else "equity_mf" if equity else "unknown")
     if not equity:
-        r["adapter_issues"].append("Debt or unknown fund category: excluded from equity calculations.")
+        r["adapter_issues"].append(
+            "Debt fund: Schedule CG A5 slab-rate review."
+            if debt else "Unknown fund category: excluded from equity calculations."
+        )
     if not scheme:
         r["adapter_issues"].append("Missing scheme code; fund identity is not established.")
     if not _text(values["Purchase Transaction Id"]) or not _text(values["Redeem Transaction Id"]):

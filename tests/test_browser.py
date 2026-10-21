@@ -123,6 +123,32 @@ def test_browser_import_download_and_reset(tmp_path):
             assert all(row["status"] != "READY_WORKING" for row in mapped)
             assert all(row["value"] is None for row in mapped if row["field_id"] == "cg.transfer_expenses")
             assert any(row["field_id"] == "112a.isin" and row["value"] is None for row in mapped)
+            etf_file = payload(stock_book({"Short Term trades": [
+                stock_row(**{"ISIN": "INF000A01001"}),
+            ]}), "synthetic-etf.xlsx")
+            debt_file = payload(mf_book({"Debt (Specified - Other than Equity) Category": [
+                mf_row(Category="Debt"),
+            ]}), "synthetic-debt.xlsx")
+            page.locator("#files").set_input_files([{
+                "name": f["name"], "mimeType": "application/octet-stream",
+                "buffer": base64.b64decode(f["base64"]),
+            } for f in (etf_file, debt_file)])
+            page.locator("#review").click()
+            expect(page.locator("#filing-groups")).to_contain_text(
+                "Non-equity (Schedule CG A5, slab rate)", timeout=30000)
+            expect(page.locator("#filing-groups")).to_contain_text("Not reported")
+            with page.expect_download(timeout=30000) as non_equity_download:
+                page.locator("#export").click()
+            non_equity_book = load_workbook(io.BytesIO(
+                Path(non_equity_download.value.path()).read_bytes()))
+            assert non_equity_book["Filing groups"]["A2"].value == \
+                "Non-equity (Schedule CG A5, slab rate)"
+            assert non_equity_book["Filing groups"]["H2"].value is None
+            non_equity_map = list(non_equity_book["Filing map"].values)
+            assert {row[4] for row in non_equity_map[1:]} >= {
+                "cg.consideration", "cg.acquisition_cost", "cg.transfer_expenses",
+                "cg.non_equity_net",
+            }
             empty_file = payload(stock_book(), "empty.xlsx")
             page.locator("#files").set_input_files({
                 "name": empty_file["name"], "mimeType": "application/octet-stream",
