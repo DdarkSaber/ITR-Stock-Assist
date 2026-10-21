@@ -66,7 +66,7 @@ async function runtime() {
       py.FS.writeFile("/home/pyodide/stock_assist/core.py", core);
       py.FS.writeFile("/home/pyodide/stock_assist/groww.py", groww);
       py.FS.writeFile("/home/pyodide/stock_assist/filing.py", filing);
-      await py.runPythonAsync("from stock_assist.core import review, workbook_bytes");
+      await py.runPythonAsync("from stock_assist.core import ImportProblem, review, workbook_bytes");
       return py;
     })().catch(error => { runtimePromise = null; throw error; });
   }
@@ -212,15 +212,21 @@ $("review").addEventListener("click", async () => {
     const output = await py.runPythonAsync(`
 import json
 try:
-    reviewed = review(json.loads(input_json), selected_fy)
-    output_json = json.dumps(reviewed)
+    try:
+        reviewed = review(json.loads(input_json), selected_fy)
+        response = {"result": reviewed}
+    except ImportProblem as exc:
+        response = {"problem": str(exc)}
+    output_json = json.dumps(response)
 finally:
     input_json = None
 output_json
 `);
-    result = JSON.parse(output);
-    py.globals.delete("reviewed");
+    const response = JSON.parse(output);
     py.globals.delete("output_json");
+    if (response.problem !== undefined) throw new Error(response.problem);
+    result = response.result;
+    py.globals.delete("reviewed");
     render(result);
     $("status").textContent = "Review ready. Blocked rows remain visible and are preserved in the workbook.";
   } catch (error) { fail(error); }

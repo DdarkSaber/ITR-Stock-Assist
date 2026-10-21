@@ -90,7 +90,12 @@ def test_browser_import_download_and_reset(tmp_path):
                 "name": "wrong.csv", "mimeType": "text/csv", "buffer": b"name,value\nx,2\n",
             })
             page.locator("#review").click()
-            expect(page.locator("#error")).to_contain_text("headers must match", timeout=30000)
+            expect(page.locator("#error")).to_have_text(
+                "wrong.csv: headers must match the canonical template exactly. "
+                "Download the sample CSV and map one disposed acquisition lot per row.",
+                timeout=30000,
+            )
+            assert "Traceback" not in page.locator("#error").inner_text()
             expect(page.locator("#results")).to_be_hidden()
             stock_file = payload(stock_book({"Short Term trades": [stock_row()]}), "stock.xlsx")
             fund_file = payload(mf_book({"Equity Category": [mf_row()]}), "fund.xlsx")
