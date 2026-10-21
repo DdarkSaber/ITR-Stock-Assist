@@ -140,6 +140,7 @@ def _review(files, fy):
         raw = record["raw"]
         native = record.get("native", False)
         issues = list(record.get("adapter_issues", []))
+        non_blocking_issues = []
         for field in ("lot_id", "broker", "asset_name"):
             if not raw[field]:
                 issues.append(f"{field}: required; copy from the source report.")
@@ -198,9 +199,12 @@ def _review(files, fy):
         except InvalidOperation:
             zero_cost_and_sale = False
         if zero_cost_and_sale:
-            issues.append(
+            zero_value_issue = (
                 "Both cost and sale value are 0: likely rights entitlement or corporate action - confirm."
             )
+            issues.append(zero_value_issue)
+            if not native and amounts.get("transfer_expenses_inr", Decimal(0)) > 0:
+                non_blocking_issues.append(zero_value_issue)
         outside = sell is not None and not start <= sell <= end
         if outside:
             issues.append(f"Sale outside FY {fy}; excluded from this year's totals.")
@@ -217,13 +221,14 @@ def _review(files, fy):
         if native:
             from stock_assist.groww import PENDING
             issues.append(PENDING)
-        record.update(status="BLOCKED" if issues else "INCLUDED",
+        blocking_issues = [issue for issue in issues if issue not in non_blocking_issues]
+        record.update(status="BLOCKED" if blocking_issues else "INCLUDED",
                       issues=issues, term=term if native else "", gain="",
                       holding_days=record.get("holding_days", ""))
         record["broker_summary_included"] = eligible_broker
         if eligible_broker:
             record["status"] = "REVIEW_REQUIRED"
-        if not issues:
+        if not blocking_issues:
             term = holding_term(buy, sell)
             gain = amounts["proceeds_inr"] - amounts["cost_inr"] - amounts["transfer_expenses_inr"]
             totals[term] += gain

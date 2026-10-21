@@ -95,6 +95,9 @@ def test_exact_decimal_loss_and_zero_cost():
     assert data["totals"]["STCG"] == "0.19"
     data = review([file_for(cost_inr="0", proceeds_inr="0", transfer_expenses_inr="0.10")], "2025-26")
     assert data["totals"]["STCG"] == "-0.10"
+    assert data["records"][0]["status"] == "INCLUDED"
+    assert any("likely rights entitlement or corporate action - confirm" in issue
+               for issue in data["records"][0]["issues"])
 
 
 @pytest.mark.parametrize("text", ["", "a,b\n1,2\n", SAMPLE.replace("lot_id", "broker", 1),
@@ -121,7 +124,7 @@ def test_spreadsheet_formula_injection_is_literal():
 
 
 def test_zero_cost_and_sale_are_flagged_as_possible_rights_or_corporate_action():
-    data = review([file_for(cost_inr="0", proceeds_inr="0")], "2025-26")
+    data = review([file_for(cost_inr="0", proceeds_inr="0", transfer_expenses_inr="0")], "2025-26")
     record = data["records"][0]
     assert record["status"] == "BLOCKED"
     assert "likely rights entitlement or corporate action - confirm" in " ".join(record["issues"])
