@@ -35,6 +35,12 @@ def test_browser_import_download_and_reset(tmp_path):
             page.on("pageerror", lambda error: failures.append(str(error)))
             page.on("request", lambda request: requests.append((request.url, request.method, request.post_data)))
             page.goto(f"http://127.0.0.1:{server.server_port}", wait_until="networkidle")
+            csp = page.locator('meta[http-equiv="Content-Security-Policy"]').get_attribute("content")
+            assert csp == (
+                "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'wasm-unsafe-eval'; "
+                "connect-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self'; "
+                "object-src 'none'; base-uri 'self'; form-action 'self'"
+            )
             expect(page.locator("footer")).to_contain_text("v0.3.1")
             cold_file = payload(stock_book({"Short Term trades": [stock_row()]}), "first-native.xlsx")
             page.locator("#files").set_input_files({
@@ -43,6 +49,13 @@ def test_browser_import_download_and_reset(tmp_path):
             })
             page.locator("#review").click()
             expect(page.locator("#broker-stcg")).to_have_text("100.20", timeout=180000)
+            pyodide_script = page.locator(
+                'script[src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"]'
+            )
+            assert pyodide_script.get_attribute("integrity") == (
+                "sha384-tVslJOEkg7nVRW3Y3/ReGX0NnonNrbcmt1R5qFbQXQdGa2chRkoJYHAjAsv3zoTq"
+            )
+            assert pyodide_script.get_attribute("crossorigin") == "anonymous"
             page.locator("#reset").click()
             page.locator("#files").set_input_files(str(ROOT / "samples" / "canonical-demo.csv"))
             expect(page.locator("#review")).to_be_enabled()

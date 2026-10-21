@@ -51,6 +51,8 @@ async function runtime() {
         await new Promise((resolve, reject) => {
           const script = document.createElement("script");
           script.src = `${RUNTIME}pyodide.js`;
+          script.integrity = "sha384-tVslJOEkg7nVRW3Y3/ReGX0NnonNrbcmt1R5qFbQXQdGa2chRkoJYHAjAsv3zoTq";
+          script.crossOrigin = "anonymous";
           script.onload = resolve;
           script.onerror = () => { script.remove(); reject(new Error("Runtime download failed. Check internet access to cdn.jsdelivr.net, then retry.")); };
           document.head.append(script);
