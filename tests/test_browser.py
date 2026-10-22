@@ -258,3 +258,78 @@ def test_browser_import_download_and_reset(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join()
+
+
+@pytest.mark.browser
+def test_forms_ring_dialog_and_responsive_layout():
+    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(ROOT)))
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            page = browser.new_page(viewport={"width": 1440, "height": 1000})
+            failures = []
+            console = []
+            page.on("pageerror", lambda error: failures.append(str(error)))
+            page.on("console", lambda message: console.append((message.type, message.text)))
+            page.goto(f"http://127.0.0.1:{server.server_port}", wait_until="networkidle")
+            expect(page.locator('[data-ring="home"] .card3')).to_have_count(6)
+            assert page.locator("[style]").count() == page.locator(
+                ".card3[style], .ring[style], .orb[style], .tilt[style], .deckcard[style], "
+                "#lab-fill[style], #lab-mark[style], [data-ring][style], .stage[style]").count()
+            page.locator("#sample").click()
+            page.locator("#review").click()
+            expect(page.locator("#results")).to_be_visible(timeout=180000)
+            cards = page.locator(".forms-ring .card3")
+            expect(cards).to_have_count(8)
+            expect(page.locator('.forms-ring [data-slot="stcg"]')).to_have_text("\u20b91,965.20")
+            expect(page.locator('.forms-ring [data-slot="ltcg"]')).to_have_text("\u20b97,500.00")
+            expect(page.locator("#kpi-stcg")).to_have_text("1,965.20")
+            stage = page.locator('[data-ring="forms"] .stage')
+            stage.hover()
+            a2 = page.locator('.forms-ring [data-card="stcg"] .cardbtn')
+            dialog = page.locator('[role="dialog"]')
+            for _ in range(2):
+                a2.click()
+                page.wait_for_timeout(1000)
+                if dialog.is_visible():
+                    break
+            expect(dialog).to_be_visible()
+            assert dialog.get_attribute("aria-modal") == "true"
+            expect(page.locator("#dlg-title")).to_contain_text("1,965.20")
+            expect(page.locator("#dlg-close")).to_be_focused()
+            expect(page.locator("#paperbox .page").first).to_be_visible()
+            expect(page.locator("#paperbox .prow.hl")).to_have_count(1)
+            expect(page.locator("#listbox .fl").first).to_contain_text("Full value of consideration")
+            page.locator("#seg-fill").click()
+            assert all(tag in ("FILL", "CHECK") for tag in page.locator("#listbox .tag").all_inner_texts())
+            page.set_viewport_size({"width": 390, "height": 844})
+            page.wait_for_timeout(300)
+            assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+            page.set_viewport_size({"width": 1440, "height": 1000})
+            page.keyboard.press("Escape")
+            expect(page.locator("#dlg-overlay")).to_be_hidden()
+            expect(a2).to_be_focused()
+            page.locator('[data-ring="forms"] .dot').nth(3).click()
+            stage.hover()
+            page.wait_for_timeout(1100)
+            page.locator('.forms-ring [data-card="setoff"] .cardbtn').click()
+            expect(dialog).to_be_visible()
+            assert set(page.locator("#listbox .tag").all_inner_texts()) <= {"CHECK", "SKIP"}
+            page.mouse.click(5, 5)
+            expect(page.locator("#dlg-overlay")).to_be_hidden()
+            page.locator("#reset").click()
+            expect(page.locator("#results")).to_be_hidden()
+            expect(page.locator('.forms-ring [data-slot="stcg"]')).to_have_text("")
+            for width, height in ((390, 844), (820, 1180), (2560, 1440)):
+                page.set_viewport_size({"width": width, "height": height})
+                page.wait_for_timeout(200)
+                assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), width
+            assert not failures
+            assert not [text for kind, text in console if kind == "error" or "Content Security Policy" in text]
+            browser.close()
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()

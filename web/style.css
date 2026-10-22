@@ -33,6 +33,7 @@ label,small{display:block}
 small{color:var(--mut);font-size:.75rem;margin-top:.5rem}
 svg{flex:none}
 [hidden]{display:none!important}
+body.dlg-open{overflow:hidden}
 :focus-visible{outline:2px solid var(--a2);outline-offset:4px}
 .disp{font-family:var(--font-disp);font-weight:700}
 .mono{font-family:var(--font-mono)}
@@ -291,8 +292,8 @@ svg{flex:none}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 .dlg{position:relative;width:100%;max-width:min(77.5rem,100%);border-radius:var(--radius-l);background:linear-gradient(var(--panel),var(--panel)),var(--bg);border:1px solid var(--line);padding:clamp(1.125rem,3vw,2rem);animation:dlgin .6s var(--ease) both;transform-origin:50% 0;container-type:inline-size}
 @keyframes dlgin{from{opacity:0;transform:perspective(1400px) rotateY(-30deg) rotateX(10deg) scale(.86)}to{opacity:1;transform:none}}
-.dlg-head{display:flex;flex-wrap:wrap;gap:.875rem;justify-content:space-between;align-items:flex-start}
-.dlg-head-text{min-width:0;flex:1 1 20rem}
+.dlg-head{display:flex;flex-wrap:nowrap;gap:.875rem;justify-content:space-between;align-items:flex-start}
+.dlg-head-text{min-width:0;flex:1 1 auto}
 .dlg-head .kicker{letter-spacing:.16em}
 .dlg-title{margin:.5rem 0 .375rem;font-size:clamp(1.5rem,3vw,2.25rem);line-height:1.15;letter-spacing:-.02em;overflow-wrap:anywhere}
 #dlg-sub{font-size:.9375rem}

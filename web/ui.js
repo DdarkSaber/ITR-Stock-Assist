@@ -826,7 +826,292 @@
   document.addEventListener("itr:render", event => renderForms(event.detail));
   document.addEventListener("itr:clear", clearForms);
 
-  /* DIALOG */
-  function openDialog() {}
-  function closeDialog() {}
+  /* ---------- Dialog: paper form (left) + your values (right) ---------- */
+  const overlay = $("dlg-overlay");
+  const dialog = qs(".dlg", overlay);
+  const paperbox = $("paperbox");
+  const listbox = $("listbox");
+  const ORDER = ["stcg", "other", "ltcg", "setoff", "tablef", "accounts", "lots"];
+  const NAMES = { stcg: "STCG (A2, 111A)", other: "Other STCG (A5)", ltcg: "LTCG (112A)", setoff: "Set-off (E)", tablef: "Quarter breakup (F)", accounts: "Your accounts", lots: "Your lots" };
+  const INFO = {
+    accounts: { kicker: "BY ACCOUNT", title: "Your accounts", sub: "Totals for each broker and file. The ITR has no per-account rows, so only the combined row goes in." },
+    lots: { kicker: "EVERY SALE", title: "Your lots", sub: "Every disposed lot from your files, by review status. The full table with source rows is on the page below." },
+  };
+  const dlg = { kind: null, opener: null, step: 0, play: false, onlyFill: false };
+
+  function visibleFields() {
+    const all = forms[dlg.kind].fields.map((x, i) => ({ x, i }));
+    if (!dlg.onlyFill) return all;
+    const some = all.filter(o => o.x[2] === "FILL" || o.x[2] === "CHECK");
+    return some.length ? some : all;
+  }
+  function buildPaper(form) {
+    const isSkip = f => form.fields[f] && form.fields[f][2] === "SKIP";
+    paperbox.replaceChildren(...form.pages.map(pg => {
+      const page = el("div", "page");
+      const head = el("div", "pghead");
+      head.append(el("span", null, pg.left), el("span", null, pg.right));
+      page.append(head);
+      for (const it of pg.items) {
+        if (it.t === "title") page.append(el("div", "ptitle", it.text));
+        else if (it.t === "h") page.append(el("div", "ph", it.text));
+        else if (it.t === "note") page.append(el("div", "pnote", it.text));
+        else if (it.t === "row") {
+          const r = el("div", `prow${it.dim ? " dim" : ""}`);
+          r.dataset.f = String(it.f);
+          const box = el("span", `pbox${it.nobox ? " nobox" : isSkip(it.f) ? " skipbox" : ""}`);
+          r.append(el("span", "pnum", it.num), el("span", `plabel ${it.ind}`.trim(), it.text), box);
+          page.append(r);
+        } else if (it.t === "grid") {
+          const wrap = el("div", "ftable-wrap");
+          const table = el("table", "ftable");
+          const thead = el("thead");
+          const tr = el("tr");
+          for (const h of ["Type of capital gain / Date", "Upto 15/6 (i)", "16/6 to 15/9 (ii)", "16/9 to 15/12 (iii)", "16/12 to 15/3 (iv)", "16/3 to 31/3 (v)"]) tr.append(el("th", null, h));
+          thead.append(tr);
+          const tbody = el("tbody");
+          for (const g of GRID) {
+            const gr = el("tr");
+            gr.dataset.fs = g.fs.join(",");
+            gr.append(el("td", null, g.label));
+            for (const f of g.fs) {
+              const td = el("td", isSkip(f) ? "skipbox" : "");
+              td.dataset.f = String(f);
+              gr.append(td);
+            }
+            tbody.append(gr);
+          }
+          table.append(thead, tbody);
+          wrap.append(table);
+          page.append(wrap);
+        }
+      }
+      return page;
+    }));
+  }
+  function buildList() {
+    const vis = visibleFields();
+    listbox.replaceChildren(...vis.map((o, k) => {
+      const [letter, label, act, mine, note] = o.x;
+      const button = el("button", `fl${act === "SKIP" ? " dim" : ""}`);
+      button.type = "button";
+      button.id = `gl-${k}`;
+      const text = el("span", "fl-text");
+      text.append(el("span", "fl-label", label), el("span", "fl-note", note));
+      const right = el("span", "fl-right");
+      const valCls = act === "FILL" ? "st-ok" : act === "CHECK" ? "st-warn" : "st-mut";
+      right.append(el("span", `tag act-${act}`, act), el("span", `fl-val ${valCls}`, act === "SKIP" ? "—" : (mine || "—")));
+      button.append(el("span", "letter", letter), text, right);
+      button.addEventListener("click", () => { dlg.play = false; setStep(k); });
+      return button;
+    }));
+  }
+  function scrollInto(box, target, center) {
+    if (!box || !target) return;
+    const br = box.getBoundingClientRect();
+    const tr = target.getBoundingClientRect();
+    box.scrollTo({
+      top: Math.max(0, tr.top - br.top + box.scrollTop - box.clientHeight * 0.32),
+      left: center ? Math.max(0, tr.left - br.left + box.scrollLeft - 60) : box.scrollLeft,
+      behavior: isReduced() ? "auto" : "smooth",
+    });
+  }
+  function setStep(k) {
+    const vis = visibleFields();
+    dlg.step = Math.max(0, Math.min(k, vis.length - 1));
+    const active = vis[dlg.step].i;
+    qsa(".fl", listbox).forEach((button, j) => {
+      const on = j === dlg.step;
+      button.classList.toggle("on", on);
+      if (on) button.setAttribute("aria-current", "step"); else button.removeAttribute("aria-current");
+    });
+    $("walk-count").textContent = `Field ${dlg.step + 1} of ${vis.length}`;
+    $("walk-prog").style.width = `${Math.round((dlg.step + 1) / vis.length * 100)}%`;
+    for (const node of qsa(".hl, .rowon", paperbox)) node.classList.remove("hl", "rowon");
+    const target = qs(`[data-f="${active}"]`, paperbox);
+    if (target) {
+      target.classList.add("hl");
+      const gridRow = target.closest("tr[data-fs]");
+      if (gridRow) gridRow.classList.add("rowon");
+    }
+    const current = vis[dlg.step].x;
+    paperbox.setAttribute("aria-label", `Recreated ${forms[dlg.kind].formTitle} form, current field ${current[0]}: ${current[1]}`);
+    renderPlay();
+    scrollInto(paperbox, target, true);
+    const gridWrap = target && target.closest(".ftable-wrap");
+    if (gridWrap) scrollInto(gridWrap, target, true);
+    scrollInto(listbox, $(`gl-${dlg.step}`), false);
+  }
+  function renderPlay() {
+    const button = $("walk-play");
+    button.classList.toggle("is-paused", !dlg.play);
+    button.setAttribute("aria-label", dlg.play ? "Pause walkthrough" : "Play walkthrough");
+  }
+  function setOnlyFill(on) {
+    dlg.onlyFill = on;
+    $("seg-all").classList.toggle("on", !on);
+    $("seg-fill").classList.toggle("on", on);
+    $("seg-all").setAttribute("aria-pressed", String(!on));
+    $("seg-fill").setAttribute("aria-pressed", String(on));
+    dlg.play = !isReduced();
+    buildList();
+    setStep(0);
+  }
+  function infoTable(caption, heads, rows) {
+    const scroll = el("div", "table-scroll");
+    scroll.tabIndex = 0;
+    scroll.setAttribute("role", "region");
+    scroll.setAttribute("aria-label", caption);
+    const table = el("table", "tbl");
+    table.append(el("caption", null, caption));
+    const thead = el("thead");
+    const htr = el("tr");
+    heads.forEach(([h, right]) => htr.append(el("th", right ? "r" : "", h)));
+    thead.append(htr);
+    const tbody = el("tbody");
+    for (const cells of rows) {
+      const tr = el("tr", cells.cls || "");
+      for (const cell of cells) {
+        const td = el("td", cell.cls || "");
+        if (cell.main !== undefined) {
+          td.append(el("span", null, cell.main));
+          if (cell.small) td.append(el("small", null, cell.small));
+        } else td.textContent = cell.text;
+        tr.append(td);
+      }
+      tbody.append(tr);
+    }
+    table.append(thead, tbody);
+    scroll.append(table);
+    return scroll;
+  }
+  function buildInfo(kind) {
+    const box = $("dlg-info");
+    const { T } = model;
+    const money = (v, has) => ({ text: has ? fmt(v) : "—", cls: `r${v < 0n ? " st-bad" : ""}` });
+    if (kind === "accounts") {
+      const rows = model.accounts.map(a => [
+        { main: a.broker, small: a.file },
+        money(a.S, T.S.lots), money(a.O, T.O.lots), money(a.L, T.L.lots), { text: String(a.n), cls: "r" },
+      ]);
+      const total = [{ text: "Combined, goes in the ITR" }, money(T.S.net, T.S.lots), money(T.O.net, T.O.lots), money(T.L.net, T.L.lots), { text: String(T.S.lots + T.O.lots + T.L.lots), cls: "r" }];
+      total.cls = "total";
+      rows.push(total);
+      box.replaceChildren(infoTable(
+        "For checking against each broker. Lots in a filing group only; the ITR takes the combined row.",
+        [["ACCOUNT / FILE"], ["STCG 111A / INR", true], ["OTHER STCG / INR", true], ["LTCG 112A / INR", true], ["LOTS", true]],
+        rows,
+      ));
+      if (!model.accounts.length) box.append(el("p", "notice", "No lots entered a filing group, so there is nothing to split by account. See the lots table below."));
+    } else {
+      const grid = el("div", "status-grid");
+      const meanings = {
+        INCLUDED: "Attested canonical lots in the working-paper totals",
+        REVIEW_REQUIRED: "Broker-reported; in the provisional broker summary",
+        BLOCKED: "Excluded until the listed issues are resolved",
+      };
+      const statuses = Object.keys(model.status).sort();
+      for (const status of statuses.length ? statuses : ["INCLUDED"]) {
+        const card = el("div", "kpi");
+        card.append(el("div", "mono kpi-label", status), el("div", "mono kpi-val", String(model.status[status] || 0)), el("small", null, meanings[status] || "See review notes"));
+        grid.append(card);
+      }
+      const go = el("button", "btn btn-main", "Go to the lots table");
+      go.type = "button";
+      go.addEventListener("click", () => {
+        closeDialog(false);
+        $("lots-panel").scrollIntoView({ behavior: isReduced() ? "auto" : "smooth", block: "start" });
+        const scroll = qs(".table-scroll", $("lots-panel"));
+        if (scroll) scroll.focus({ preventScroll: true });
+      });
+      const row = el("div", "btn-row");
+      row.append(go);
+      box.replaceChildren(el("p", "muted", `${model.data.records.length} disposed lots across ${model.data.imports.length} imported ${model.data.imports.length === 1 ? "sheet" : "sheets"}. The table below lists the first 200; the workbook keeps every row.`), grid, row);
+    }
+  }
+  function openDialog(kind, card) {
+    if (!forms || !model) return;
+    const form = forms[kind];
+    const meta = form || INFO[kind];
+    if (!meta) return;
+    if (card) dlg.opener = qs(".cardbtn", card);
+    dlg.kind = kind;
+    $("dlg-kicker").textContent = `ITR-2 / AY ${model.data.ay} / ${meta.kicker}`;
+    $("dlg-title").textContent = meta.title;
+    $("dlg-sub").textContent = meta.sub;
+    $("dlg-form").hidden = !form;
+    $("dlg-info").hidden = !!form;
+    const next = ORDER[(ORDER.indexOf(kind) + 1) % ORDER.length];
+    $("dlg-next").textContent = `Next: ${NAMES[next]}`;
+    $("dlg-next").dataset.next = next;
+    const wasOpen = !overlay.hidden;
+    overlay.hidden = false;
+    document.body.classList.add("dlg-open");
+    formsRing.blocked = true;
+    if (form) {
+      $("dlg-footer").textContent = form.footer;
+      buildPaper(form);
+      dlg.onlyFill = false;
+      $("seg-all").classList.add("on");
+      $("seg-fill").classList.remove("on");
+      $("seg-all").setAttribute("aria-pressed", "true");
+      $("seg-fill").setAttribute("aria-pressed", "false");
+      dlg.play = !isReduced();
+      buildList();
+      paperbox.scrollTop = 0;
+      listbox.scrollTop = 0;
+      requestAnimationFrame(() => setStep(0));
+    } else {
+      dlg.play = false;
+      buildInfo(kind);
+    }
+    overlay.scrollTop = 0;
+    if (!wasOpen) setTimeout(() => $("dlg-close").focus({ preventScroll: true }), 60);
+  }
+  function closeDialog(restoreFocus = true) {
+    if (overlay.hidden) return;
+    overlay.hidden = true;
+    document.body.classList.remove("dlg-open");
+    formsRing.blocked = false;
+    dlg.play = false;
+    dlg.kind = null;
+    paperbox.replaceChildren();
+    listbox.replaceChildren();
+    $("dlg-info").replaceChildren();
+    if (restoreFocus && dlg.opener && dlg.opener.isConnected) dlg.opener.focus({ preventScroll: true });
+  }
+  setInterval(() => {
+    if (overlay.hidden || !dlg.kind || !forms || !forms[dlg.kind] || !dlg.play) return;
+    const n = visibleFields().length;
+    if (dlg.step < n - 1) setStep(dlg.step + 1);
+    else { dlg.play = false; renderPlay(); }
+  }, 2100);
+  $("dlg-close").addEventListener("click", () => closeDialog());
+  overlay.addEventListener("click", event => { if (event.target === overlay) closeDialog(); });
+  document.addEventListener("keydown", event => {
+    if (overlay.hidden) return;
+    if (event.key === "Escape") { event.preventDefault(); closeDialog(); return; }
+    if (event.key !== "Tab") return;
+    const focusable = qsa('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"]), select, input', dialog)
+      .filter(node => node.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
+  });
+  const pauseOnUser = () => { if (dlg.play) { dlg.play = false; renderPlay(); } };
+  paperbox.addEventListener("wheel", pauseOnUser, { passive: true });
+  paperbox.addEventListener("touchstart", pauseOnUser, { passive: true });
+  $("walk-play").addEventListener("click", () => {
+    const n = visibleFields().length;
+    if (!dlg.play && dlg.step >= n - 1) { dlg.play = true; setStep(0); return; }
+    dlg.play = !dlg.play;
+    renderPlay();
+  });
+  $("walk-prev").addEventListener("click", () => { dlg.play = false; setStep(dlg.step - 1); });
+  $("walk-next").addEventListener("click", () => { dlg.play = false; setStep(dlg.step + 1); });
+  $("seg-all").addEventListener("click", () => setOnlyFill(false));
+  $("seg-fill").addEventListener("click", () => setOnlyFill(true));
+  $("dlg-next").addEventListener("click", event => openDialog(event.currentTarget.dataset.next));
 })();
