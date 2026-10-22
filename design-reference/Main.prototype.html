@@ -1,0 +1,1382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ITR Stock Assist in 3D</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#070814}
+.t-aurora{--bg:#070814;--panel:rgba(22,24,54,.74);--panel2:rgba(255,255,255,.045);--ink:#eef0ff;--mut:#a9aed9;--line:rgba(255,255,255,.13);--a1:#8b7bff;--a2:#3ef0c8;--a3:#ff6fb5;--on:#0a0b1a;--warn:#ffcf70}
+.t-ember{--bg:#0d0906;--panel:rgba(36,23,14,.8);--panel2:rgba(255,255,255,.045);--ink:#f6f1ea;--mut:#c4b5a6;--line:rgba(255,255,255,.13);--a1:#ff8a4c;--a2:#ffd166;--a3:#ff6b81;--on:#1a0e06;--warn:#ffcf70}
+.t-glacier{--bg:#04121a;--panel:rgba(9,38,50,.78);--panel2:rgba(255,255,255,.045);--ink:#e9fbff;--mut:#9fc6d2;--line:rgba(255,255,255,.14);--a1:#4de8ff;--a2:#c6ff4d;--a3:#ffb86b;--on:#04121a;--warn:#ffcf70}
+.root{background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif;line-height:1.6;overflow-x:hidden;transition:background .6s,color .6s;min-height:100vh}
+.root a{color:var(--a2);text-underline-offset:4px}
+.root a:hover{color:var(--ink)}
+.disp{font-family:Unbounded,'Manrope',system-ui,sans-serif}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.grad{background:linear-gradient(95deg,var(--a1),var(--a2) 55%,var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.ribbons{position:absolute;left:-5%;right:-5%;top:40px;height:760px;background:linear-gradient(90deg,var(--a1),var(--a2) 50%,var(--a3));-webkit-mask-image:url(/_blob/66cdead07ed3f66b4d5dbd9c03a759e9);mask-image:url(/_blob/66cdead07ed3f66b4d5dbd9c03a759e9);-webkit-mask-size:100% 100%;mask-size:100% 100%;opacity:.55;animation:sway 14s ease-in-out infinite alternate;pointer-events:none}
+@keyframes sway{from{transform:translateX(-2%) scaleY(1)}to{transform:translateX(2%) scaleY(1.08)}}
+.contours{position:absolute;inset:0;background:var(--a2);-webkit-mask-image:url(/_blob/94ba4c5c05cfc1aa5cb3a3c867033123);mask-image:url(/_blob/94ba4c5c05cfc1aa5cb3a3c867033123);-webkit-mask-size:cover;mask-size:cover;opacity:.12;pointer-events:none;animation:breathe 18s ease-in-out infinite alternate}
+@keyframes breathe{from{transform:scale(1)}to{transform:scale(1.06)}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:12px 24px;border-radius:999px;font:700 15px Manrope,system-ui,sans-serif;cursor:pointer;text-decoration:none;transition:transform .2s,filter .2s,background .2s,border-color .2s,opacity .2s}
+.root .btn-main{background:linear-gradient(120deg,var(--a1),var(--a2));color:var(--on);border:none}
+.root .btn-main:hover{transform:translateY(-2px);filter:brightness(1.1);color:var(--on)}
+.root .btn-main:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none}
+.root .btn-ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line)}
+.root .btn-ghost:hover{border-color:var(--a2);color:var(--ink)}
+.icon-btn{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s,transform .2s;flex:none}
+.icon-btn:hover{border-color:var(--a2);transform:scale(1.06)}
+.swatch{width:34px;height:34px;border-radius:50%;cursor:pointer;border:2px solid transparent;padding:0;transition:transform .2s,border-color .2s}
+.swatch:hover{transform:scale(1.12)}
+.swatch.on{border-color:var(--ink)}
+.root .root .navlink{color:var(--mut);text-decoration:none}
+.root .navlink:hover{color:var(--ink)}
+.root .navlink:hover{color:var(--ink)}
+.stage{perspective:1300px;perspective-origin:50% 45%;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none;outline:none}
+.stage.dragging{cursor:grabbing}
+.stage:focus-visible{outline:2px solid var(--a2);outline-offset:6px;border-radius:24px}
+.tilt{position:relative;width:200px;height:260px;transform-style:preserve-3d;transition:transform .25s ease-out}
+.ring{position:absolute;inset:0;transform-style:preserve-3d}
+.card3{position:absolute;left:0;top:0;width:200px;height:260px;box-sizing:border-box;border-radius:20px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(165deg,color-mix(in srgb,var(--a1) 30%,transparent),var(--panel) 60%);border:1px solid var(--line);opacity:.55;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:opacity .5s,border-color .5s,box-shadow .5s,background .5s}
+.card3.on{opacity:1;border-color:var(--a2);background:linear-gradient(165deg,color-mix(in srgb,var(--a1) 32%,var(--bg)),var(--bg) 70%);box-shadow:0 0 50px -8px color-mix(in srgb,var(--a2) 60%,transparent)}
+.orb{position:absolute;left:50%;top:-70px;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;background:radial-gradient(circle at 34% 28%,#ffffff 0%,var(--a2) 22%,var(--a1) 58%,var(--bg) 100%);box-shadow:0 0 90px 18px color-mix(in srgb,var(--a1) 55%,transparent);display:flex;align-items:center;justify-content:center;font:700 46px Unbounded,system-ui,sans-serif;color:var(--on)}
+.halo{position:absolute;left:50%;top:-70px;border-radius:50%;transform:scaleY(.22)}
+.h1r{width:250px;height:250px;margin:-125px 0 0 -125px;border:2px solid color-mix(in srgb,var(--a2) 70%,transparent)}
+.h2r{width:360px;height:360px;margin:-180px 0 0 -180px;border:1px dashed color-mix(in srgb,var(--a1) 70%,transparent);animation:halo 22s linear infinite}
+@keyframes halo{from{transform:scaleY(.22) rotate(0deg)}to{transform:scaleY(.22) rotate(360deg)}}
+.dot{width:12px;height:12px;border-radius:50%;border:1px solid var(--mut);background:transparent;cursor:pointer;padding:0;transition:background .3s,transform .3s}
+.dot.on{background:var(--a2);border-color:var(--a2);transform:scale(1.3)}
+.dotwrap{display:inline-flex;align-items:center;justify-content:center;width:28px;height:44px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:28px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.field{display:flex;flex-direction:column;gap:8px;flex:1 1 200px;min-width:0}
+.field label{font-weight:700;font-size:14px}
+.inp{font:500 16px Manrope,system-ui,sans-serif;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-height:48px;box-sizing:border-box;width:100%;color-scheme:dark}
+.inp:focus,.mini:focus{outline:2px solid var(--a2);outline-offset:2px}
+.inp option,.mini option{background-color:var(--bg);color:var(--ink)}
+.mini{font:500 14px Manrope,system-ui,sans-serif;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px 10px;min-height:44px;box-sizing:border-box;color-scheme:dark;min-width:0}
+.switch{position:relative;width:76px;height:40px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;padding:0;flex:none}
+.knob{position:absolute;left:5px;top:5px;width:28px;height:28px;border-radius:50%;background:var(--mut);transition:transform .35s cubic-bezier(.2,.8,.2,1),background .35s}
+.switch.on{background:color-mix(in srgb,var(--a2) 30%,transparent);border-color:var(--a2)}
+.switch.on .knob{transform:translateX(36px);background:var(--a2)}
+.badge{display:inline-block;font:600 12px 'JetBrains Mono',monospace;letter-spacing:.08em;padding:6px 10px;border-radius:8px;background:color-mix(in srgb,var(--a1) 26%,transparent);color:var(--ink)}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:14px;padding:8px 14px;border-radius:999px;border:1px solid var(--line)}
+.node{padding:16px 18px;border-radius:18px;border:1px solid var(--line);background:var(--panel);flex:1 1 200px;max-width:260px;text-align:left}
+.flowin{animation:flowin .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes flowin{from{opacity:0;transform:perspective(900px) rotateX(-50deg) translateY(-20px)}to{opacity:1;transform:none}}
+.chip{font:600 13px Manrope,system-ui,sans-serif;padding:10px 16px;min-height:44px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;transition:border-color .2s,background .2s}
+.chip:hover{border-color:var(--a1)}
+.chip.on{background:color-mix(in srgb,var(--a1) 28%,transparent);border-color:var(--a1)}
+.st-ok{color:var(--a2)}
+.st-warn{color:var(--warn)}
+.st-mut{color:var(--mut)}
+.st-bad{color:var(--a3)}
+.term-LTCG{color:var(--a2)}
+.term-STCG{color:var(--a3)}
+.result{transform-style:preserve-3d}
+.fa{animation:flipA .7s cubic-bezier(.2,.8,.2,1)}
+.fb{animation:flipB .7s cubic-bezier(.2,.8,.2,1)}
+@keyframes flipA{from{transform:perspective(1000px) rotateX(-80deg);opacity:.2}to{transform:perspective(1000px) rotateX(0deg);opacity:1}}
+@keyframes flipB{from{transform:perspective(1000px) rotateX(-80deg);opacity:.2}to{transform:perspective(1000px) rotateX(0deg);opacity:1}}
+.track{position:relative;height:14px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);overflow:visible}
+.fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--a1),var(--a2));transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.mark{position:absolute;top:-8px;width:2px;height:30px;background:var(--ink);transition:left .7s}
+.deck{position:relative;height:330px;perspective:1200px;perspective-origin:50% 0%}
+.deckcard{position:absolute;left:0;right:0;top:0;height:300px;box-sizing:border-box;padding:36px;border-radius:28px;background:linear-gradient(var(--panel),var(--panel)),var(--bg);border:1px solid var(--line);transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .7s;transform-origin:50% 0%;display:flex;flex-wrap:wrap;gap:28px;align-items:center;overflow:hidden}
+.tab{font:700 15px Manrope,system-ui,sans-serif;padding:12px 20px;min-height:46px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer;transition:all .25s}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--on);background:var(--a2);border-color:var(--a2)}
+.kpi{padding:22px;border-radius:20px;border:1px solid var(--line);background:var(--panel2);transition:transform .3s}
+.kpi:hover{transform:perspective(800px) rotateX(8deg) translateY(-4px)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:44px 20px;border-radius:24px;border:2px dashed color-mix(in srgb,var(--a2) 55%,transparent);background:color-mix(in srgb,var(--a2) 5%,transparent);cursor:pointer;transition:all .25s}
+.drop:hover,.drop.hot{border-color:var(--a2);background:color-mix(in srgb,var(--a2) 12%,transparent);transform:translateY(-2px)}
+.drop:focus-within{outline:2px solid var(--a2);outline-offset:4px}
+.frow{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 16px;border-radius:18px;border:1px solid var(--line);background:var(--panel2)}
+.frow.bad{border-color:color-mix(in srgb,var(--a3) 60%,transparent)}
+.bigcard{display:block;width:100%;text-align:left;cursor:pointer;color:var(--ink);font:inherit;padding:30px;border-radius:28px;border:1px solid var(--line);background:linear-gradient(160deg,color-mix(in srgb,var(--a1) 22%,var(--bg)),var(--bg) 70%);transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .3s}
+.bigcard:hover{transform:perspective(900px) rotateX(5deg) rotateY(-5deg) translateY(-6px);border-color:var(--a2);box-shadow:0 40px 80px -40px color-mix(in srgb,var(--a2) 60%,transparent)}
+.bigcard:focus-visible,.step:focus-visible{outline:2px solid var(--a2);outline-offset:4px}
+.step{display:flex;gap:14px;align-items:flex-start;text-align:left;width:100%;padding:14px 16px;border-radius:18px;border:1px solid transparent;background:transparent;color:var(--mut);font:inherit;cursor:pointer;transition:all .3s}
+.step:hover{color:var(--ink);background:var(--panel2)}
+.step.on{color:var(--ink);background:var(--panel);border-color:var(--a2)}
+.num{flex:none;width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font:600 12px 'JetBrains Mono',monospace;border:1px solid var(--line)}
+.step.on .num{border-color:var(--a2);color:var(--a2)}
+.step.done .num{background:var(--a2);border-color:var(--a2);color:var(--on)}
+.form{position:relative;border-radius:22px;overflow:hidden;background:#f4f6fb;color:#1c2333;box-shadow:0 40px 90px -40px rgba(0,0,0,.75)}
+.fhead{height:92px;box-sizing:border-box;padding:16px 22px;background:#16357a;color:#ffffff}
+.frow2{height:50px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 22px;border-bottom:1px solid #dfe3ec;transition:background .4s}
+.frow2.act{background:#fff3cc}
+.flabel{font-size:13px;color:#2f384b;flex:1 1 55%;line-height:1.3;min-width:0}
+.fval{flex:0 0 40%;height:38px;box-sizing:border-box;border:1px solid #c5ccd9;border-radius:6px;background:#ffffff;display:flex;align-items:center;padding:0 10px;font:600 13px 'JetBrains Mono',monospace;color:#14306b;overflow:hidden;white-space:nowrap;transition:border-color .3s,box-shadow .3s}
+.frow2.act .fval{border-color:#c98a00;box-shadow:0 0 0 3px rgba(224,161,0,.3)}
+.ta,.tb{display:inline-block;overflow:hidden;white-space:nowrap;vertical-align:bottom}
+.ta{animation:typeA 1s steps(18) both}
+.tb{animation:typeB 1s steps(18) both}
+@keyframes typeA{from{max-width:0}to{max-width:30ch}}
+@keyframes typeB{from{max-width:0}to{max-width:30ch}}
+.cursor{position:absolute;width:26px;height:26px;transition:top .8s cubic-bezier(.2,.8,.2,1),left .8s cubic-bezier(.2,.8,.2,1);pointer-events:none;z-index:5;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}
+.ping{position:absolute;left:-7px;top:-7px;width:20px;height:20px;border-radius:50%;border:2px solid #c98a00;animation:ping 1.2s ease-out infinite}
+@keyframes ping{from{transform:scale(.4);opacity:1}to{transform:scale(2.2);opacity:0}}
+.prog{height:6px;border-radius:999px;background:var(--panel2);overflow:hidden;flex:1 1 120px}
+.prog>div{height:100%;background:linear-gradient(90deg,var(--a1),var(--a2));transition:width .6s}
+.view{animation:viewin .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes viewin{from{opacity:0;transform:perspective(1200px) rotateX(8deg) translateY(30px)}to{opacity:1;transform:none}}
+.tbl{border-collapse:collapse;width:100%;min-width:560px;font-size:15px}
+.tbl th{text-align:left;padding:12px;font:600 11px 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--a2);border-bottom:1px solid var(--line)}
+.tbl td{padding:14px 12px;border-bottom:1px solid var(--line)}
+.tbl .r{text-align:right;font-family:'JetBrains Mono',monospace}
+.cardbtn{position:absolute;inset:0;border-radius:20px;border:none;background:transparent;cursor:pointer;padding:0}
+.cardbtn:focus-visible{outline:2px solid var(--a2);outline-offset:3px}
+.hint{font:600 11px 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--a2)}
+.ovl{position:fixed;inset:0;z-index:50;background:rgba(3,4,12,.74);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow-y:auto;box-sizing:border-box;animation:fadein .3s both}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.dlg{position:relative;width:100%;max-width:1240px;border-radius:28px;background:linear-gradient(var(--panel),var(--panel)),var(--bg);border:1px solid var(--line);padding:clamp(18px,3vw,32px);box-sizing:border-box;animation:dlgin .6s cubic-bezier(.2,.8,.2,1) both;transform-origin:50% 0}
+@keyframes dlgin{from{opacity:0;transform:perspective(1400px) rotateY(-30deg) rotateX(10deg) scale(.86)}to{opacity:1;transform:none}}
+.fl{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:10px 12px;border-radius:14px;border:1px solid transparent;background:transparent;color:var(--ink);font:inherit;cursor:pointer;transition:background .3s,border-color .3s,opacity .3s}
+.fl:hover{background:var(--panel2)}
+.fl.on{border-color:var(--a2);background:color-mix(in srgb,var(--a2) 10%,transparent)}
+.fl.dim{opacity:.62}
+.letter{flex:none;min-width:30px;height:30px;padding:0 4px;box-sizing:border-box;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font:600 12px 'JetBrains Mono',monospace;background:var(--panel2);border:1px solid var(--line)}
+.tag{flex:none;font:700 11px 'JetBrains Mono',monospace;letter-spacing:.06em;padding:4px 8px;border-radius:6px}
+.act-FILL{color:var(--on);background:var(--a2)}
+.act-SKIP{color:var(--mut);border:1px solid var(--line)}
+.act-AUTO{color:var(--ink);background:color-mix(in srgb,var(--a1) 40%,transparent)}
+.act-CHECK{color:#1a1200;background:var(--warn)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:3px}
+.seg button{font:700 13px Manrope,system-ui,sans-serif;border:none;border-radius:999px;padding:9px 14px;min-height:40px;background:transparent;color:var(--mut);cursor:pointer}
+.seg button.on{background:var(--a2);color:var(--on)}
+.frow2.skp{background:repeating-linear-gradient(45deg,#eef0f5,#eef0f5 8px,#e5e8ef 8px,#e5e8ef 16px)}
+.frow2.skp .fval{background:#eef0f5;color:#7c859a}
+.frow2.aut .fval{background:#eef3ff}
+.shot{display:block;width:100%;height:auto;border-radius:16px;border:1px solid var(--line)}
+.paperbox{height:min(600px,70vh);overflow:auto;border-radius:16px;background:#c9ced8;padding:18px;box-sizing:border-box;outline:none}
+.paperbox:focus-visible{outline:2px solid var(--a2);outline-offset:3px}
+.page{background:#ffffff;color:#111111;max-width:660px;margin:0 auto 20px;padding:24px 26px 28px;box-shadow:0 10px 28px rgba(0,0,0,.28);font:13px/1.45 Georgia,'Times New Roman',serif;min-height:420px;box-sizing:border-box}
+.pghead{display:flex;justify-content:space-between;gap:10px;font:600 11px Arial,sans-serif;color:#333333;border-bottom:1.5px solid #111111;padding-bottom:6px;margin-bottom:14px}
+.ptitle{font:700 15px Arial,sans-serif;text-align:center;margin:4px 0 14px}
+.ph{font:700 13px Arial,sans-serif;background:#e6e9ef;padding:7px 9px;border:1px solid #333333;margin-top:10px}
+.pnote{font-size:13px;color:#333333;padding:8px 2px;font-style:italic}
+.prow{display:flex;align-items:stretch;border:1px solid #333333;border-top:none;min-height:38px;transition:background .35s}
+.ph + .prow,.pnote + .prow,.ptitle + .prow{border-top:1px solid #333333}
+.pnum{flex:none;width:52px;padding:7px 6px;border-right:1px solid #333333;font:700 12px Arial,sans-serif}
+.plabel{flex:1 1 auto;padding:7px 8px;min-width:0}
+.plabel.ind1{padding-left:22px}
+.plabel.ind2{padding-left:40px}
+.pbox{flex:none;width:130px;border-left:1px solid #333333;background:#ffffff;transition:background .35s}
+.pbox.nobox{background:#f0f1f4}
+.pbox.skipbox{background:repeating-linear-gradient(45deg,#f2f3f6,#f2f3f6 6px,#e3e6ec 6px,#e3e6ec 12px)}
+.prow.dim{color:#888888;background:#f6f6f6}
+.prow.hl{background:#fff2c2;box-shadow:inset 4px 0 0 #d99a00}
+.prow.hl .pbox{background:#ffd95e}
+.ftable{width:100%;border-collapse:collapse;font:12px Arial,sans-serif;margin:6px 0 10px}
+.ftable th,.ftable td{border:1px solid #333333;padding:7px 6px;text-align:left;vertical-align:top}
+.ftable th{background:#e6e9ef;font-weight:700}
+.ftable td.skipbox{background:repeating-linear-gradient(45deg,#f2f3f6,#f2f3f6 6px,#e3e6ec 6px,#e3e6ec 12px)}
+.ftable tr.rowon td:first-child{background:#fff2c2}
+.ftable td.hl{background:#ffd95e;box-shadow:inset 0 0 0 2px #d99a00}
+.listbox{display:flex;flex-direction:column;gap:4px;height:min(600px,70vh);overflow:auto;padding-right:4px}
+@media (max-width:760px){.page{padding:16px 14px;min-height:0}.pbox{width:72px}.pnum{width:40px}.plabel.ind2{padding-left:26px}.paperbox,.listbox{height:56vh}}
+@keyframes rise{from{opacity:0;transform:perspective(1200px) rotateX(30deg) translateY(70px)}to{opacity:1;transform:perspective(1200px) rotateX(0deg) translateY(0)}}
+@supports (animation-timeline: view()){
+.rise{animation:rise linear both;animation-timeline:view();animation-range:entry 0% entry 60%}
+}
+@media (max-width:760px){
+.scaler{transform:scale(.62)}
+.stage{height:380px!important}
+.deckcard{padding:24px;height:auto;min-height:300px}
+.deck{height:auto;min-height:420px}
+.frow2{height:50px;padding:0 12px}
+.flabel{font-size:12px}
+.fval{font-size:12px}
+}
+@media (prefers-reduced-motion: reduce){
+.ribbons,.contours,.h2r,.fa,.fb,.flowin,.rise,.view,.ta,.tb,.ping{animation:none}
+.tilt,.deckcard,.fill,.mark,.card3,.knob,.cursor,.bigcard{transition:none}
+}
+</style>
+</helmet>
+<div class="root {{themeCls}}">
+
+<header style="position:relative;z-index:5;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;padding:18px clamp(20px,4vw,56px);border-bottom:1px solid var(--line)">
+<button type="button" onClick="{{goHome}}" aria-label="ITR Stock Assist home" style="display:flex;align-items:center;gap:12px;background:none;border:none;padding:0;color:var(--ink);cursor:pointer">
+<span aria-hidden="true" class="disp" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--a1),var(--a2));color:var(--on);font-weight:700;font-size:16px">S</span>
+<span class="disp" style="font-weight:700;font-size:16px;letter-spacing:-.01em">ITR Stock Assist</span>
+</button>
+<sc-if value="{{isHome}}" hint-placeholder-val="{{ true }}">
+<nav aria-label="Sections" style="display:flex;flex-wrap:wrap;gap:6px 24px;font-size:14px;font-weight:600">
+<a class="navlink" href="#upload">Upload</a>
+<a class="navlink" href="#lab">Holding lab</a>
+<a class="navlink" href="#how">How it works</a>
+<a class="navlink" href="#private">Privacy</a>
+</nav>
+</sc-if>
+<div role="group" aria-label="Colour theme" style="display:flex;align-items:center;gap:10px">
+<span class="mono" style="font-size:11px;letter-spacing:.12em;color:var(--mut)">THEME</span>
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="3">
+<button class="swatch {{t.cls}}" type="button" aria-label="{{t.label}}" aria-pressed="{{t.pressed}}" onClick="{{t.pick}}" style="background:linear-gradient(135deg,{{t.c1}},{{t.c2}})"></button>
+</sc-for>
+</div>
+</header>
+
+
+<sc-if value="{{isHome}}" hint-placeholder-val="{{ true }}">
+<div class="view">
+<section style="position:relative;overflow:hidden;padding:56px clamp(20px,4vw,56px) 72px">
+<div class="ribbons" aria-hidden="true"></div>
+<div style="position:relative;z-index:2;max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:40px">
+
+<div style="flex:1 1 460px;min-width:0">
+<p class="mono" style="margin:0;font-size:12px;letter-spacing:.18em;color:var(--a2)">ITR STOCK ASSIST / PERSONAL BUILD</p>
+<h1 class="disp" style="margin:18px 0 22px;font-size:clamp(40px,5.4vw,74px);line-height:1.04;letter-spacing:-.03em;font-weight:700">Capital gains,<br>in <span class="grad">three dimensions.</span></h1>
+<p style="margin:0;max-width:540px;font-size:19px;color:var(--mut)">Upload your broker reports, see your short- and long-term gains, and get walked through exactly where each number goes in ITR-2.</p>
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:30px">
+<a class="btn btn-main" href="#upload">Upload my reports</a>
+<a class="btn btn-ghost" href="#lab">Open the holding lab</a>
+</div>
+<p class="mono" style="margin:26px 0 0;font-size:12px;color:var(--mut);letter-spacing:.04em">Drag the ring. Hover to tilt. Arrow keys work too.</p>
+</div>
+
+<div style="flex:1 1 520px;min-width:0;display:flex;flex-direction:column;align-items:center">
+<div class="stage {{stageCls}}" tabindex="0" role="group" aria-roledescription="carousel" aria-label="Feature ring: drag or use arrow keys to rotate" onPointerDown="{{down}}" onPointerMove="{{move}}" onPointerUp="{{up}}" onPointerCancel="{{up}}" onPointerEnter="{{enter}}" onPointerLeave="{{leave}}" onKeyDown="{{key}}" style="width:100%;height:520px;display:flex;align-items:center;justify-content:center">
+<div class="scaler">
+<div class="tilt" style="transform: rotateX({{tiltX}}deg) rotateY({{tiltY}}deg)">
+<div class="ring" style="transform: rotateY({{angle}}deg); transition: {{ringTr}}">
+<div class="halo h1r" aria-hidden="true"></div>
+<div class="halo h2r" aria-hidden="true"></div>
+<div class="orb" aria-hidden="true" style="transform: rotateY({{negAngle}}deg); transition: {{ringTr}}">₹</div>
+
+<div class="card3 {{on0}}" style="transform:rotateY(0deg) translateZ(300px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a2)"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">LISTED EQUITY</div><div class="disp" style="font-size:30px;font-weight:700;margin-top:4px">LTCG</div><div style="font-size:13px;color:var(--mut)">held over 12 months</div></div>
+</div>
+<div class="card3 {{on1}}" style="transform:rotateY(60deg) translateZ(300px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a3)"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">EQUITY MUTUAL FUND</div><div class="disp" style="font-size:30px;font-weight:700;margin-top:4px">STCG</div><div style="font-size:13px;color:var(--mut)">12 months or less</div></div>
+</div>
+<div class="card3 {{on2}}" style="transform:rotateY(120deg) translateZ(300px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a1)"><rect x="2" y="6" width="9" height="13" rx="2"></rect><rect x="13" y="4" width="9" height="15" rx="2"></rect></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">MULTIPLE ACCOUNTS</div><div class="disp" style="font-size:22px;font-weight:700;margin-top:4px">Groww + Zerodha</div><div style="font-size:13px;color:var(--mut)">one combined return</div></div>
+</div>
+<div class="card3 {{on3}}" style="transform:rotateY(180deg) translateZ(300px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a2)"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 10h18"></path><path d="M9 4v16"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">SOURCE TRACE</div><div class="disp" style="font-size:22px;font-weight:700;margin-top:4px">Sheet + row</div><div style="font-size:13px;color:var(--mut)">every figure traceable</div></div>
+</div>
+<div class="card3 {{on4}}" style="transform:rotateY(240deg) translateZ(300px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a3)"><path d="M6 2h9l5 5v15H6z"></path><path d="M14 2v6h6"></path><path d="M9 13h8"></path><path d="M9 17h8"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">WORKING PAPER</div><div class="disp" style="font-size:30px;font-weight:700;margin-top:4px">9 sheets</div><div style="font-size:13px;color:var(--mut)">Excel, exact decimals</div></div>
+</div>
+<div class="card3 {{on5}}" style="transform:rotateY(300deg) translateZ(300px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a1)"><path d="M4 4l7 17 2-7 7-2z"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">ITR WALKTHROUGH</div><div class="disp" style="font-size:22px;font-weight:700;margin-top:4px">Fill it step by step</div><div style="font-size:13px;color:var(--mut)">animated portal guide</div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="panel" style="width:100%;max-width:560px;padding:20px 24px;margin-top:4px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+<div style="min-width:0;flex:1 1 260px" aria-live="polite">
+<div class="mono" style="font-size:11px;letter-spacing:.12em;color:var(--a2)">{{cardKicker}}</div>
+<p style="margin:6px 0 0;font-size:15px;color:var(--ink)">{{cardDesc}}</p>
+</div>
+<div style="display:flex;align-items:center;gap:8px">
+<button class="icon-btn" type="button" aria-label="Previous card" onClick="{{prev}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+<button class="icon-btn" type="button" aria-label="{{pauseLabel}}" onClick="{{togglePause}}">
+<sc-if value="{{paused}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg></sc-if>
+<sc-if value="{{playing}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"></path></svg></sc-if>
+</button>
+<button class="icon-btn" type="button" aria-label="Next card" onClick="{{next}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+</div>
+</div>
+<div style="display:flex;justify-content:center;gap:2px;margin-top:8px">
+<sc-for list="{{dots}}" as="d" hint-placeholder-count="6">
+<span class="dotwrap"><button class="dot {{d.cls}}" type="button" aria-label="{{d.label}}" aria-pressed="{{d.pressed}}" onClick="{{d.pick}}"></button></span>
+</sc-for>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+
+<section id="upload" style="position:relative;padding:80px clamp(20px,4vw,56px) 40px">
+<div style="max-width:1180px;margin:0 auto">
+<p class="mono" style="margin:0;font-size:12px;letter-spacing:.18em;color:var(--a2)">STEP 1 / UPLOAD</p>
+<h2 class="disp rise" style="margin:12px 0 14px;font-size:clamp(30px,4vw,52px);line-height:1.1;letter-spacing:-.03em;font-weight:700">Drop in your broker reports.</h2>
+<p style="margin:0 0 30px;max-width:700px;font-size:17px;color:var(--mut)">Add the capital-gains report from every trading account you used this year, then tag each file with its account. Files stay in this browser tab.</p>
+
+<div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+<div class="panel" style="flex:1 1 560px;min-width:0;padding:clamp(20px,3vw,32px)">
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin-bottom:20px">
+<div class="field" style="flex:0 1 280px"><label for="fy">Financial year</label>
+<select id="fy" class="inp" value="{{fy}}" onChange="{{setFy}}">
+<option value="2025-26">FY 2025-26 (filing in AY 2026-27)</option>
+<option value="2024-25">FY 2024-25 (filing in AY 2025-26)</option>
+</select>
+</div>
+<button class="btn btn-ghost" type="button" onClick="{{addDemo}}">Try with demo files</button>
+</div>
+<label for="files" class="drop {{dropCls}}" onDragOver="{{dragOver}}" onDragLeave="{{dragLeave}}" onDrop="{{drop}}">
+<input id="files" class="vh" type="file" multiple accept=".xlsx,.csv" onChange="{{pick}}">
+<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a2)"><path d="M12 16V4"></path><path d="M7 9l5-5 5 5"></path><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg>
+<span class="disp" style="font-size:18px;font-weight:700">Drop files here or click to choose</span>
+<span style="font-size:14px;color:var(--mut)">.xlsx or .csv, up to 10 files, 2 MB each</span>
+</label>
+
+<sc-if value="{{hasFiles}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:20px">
+<sc-for list="{{fileRows}}" as="f" hint-placeholder-count="2">
+<div class="frow flowin {{f.rowCls}}">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a1);flex:none"><path d="M6 2h9l5 5v15H6z"></path><path d="M14 2v6h6"></path></svg>
+<div style="flex:1 1 200px;min-width:0">
+<div style="font-weight:700;overflow-wrap:anywhere">{{f.name}}</div>
+<div class="mono {{f.noteCls}}" style="font-size:12px">{{f.note}}</div>
+</div>
+<sc-if value="{{f.ok}}" hint-placeholder-val="{{ true }}">
+<select class="mini" aria-label="{{f.brokerLabel}}" value="{{f.broker}}" onChange="{{f.setBroker}}">
+<option value="groww">Groww</option>
+<option value="zerodha">Zerodha</option>
+<option value="other">Other (CSV template)</option>
+</select>
+<input class="mini" type="text" aria-label="{{f.nickLabel}}" value="{{f.nick}}" onChange="{{f.setNick}}" style="width:150px">
+</sc-if>
+<button class="icon-btn" type="button" aria-label="{{f.removeLabel}}" onClick="{{f.remove}}" style="width:44px;height:44px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-top:24px">
+<span style="font-size:14px;color:var(--mut)">{{uploadSummary}}</span>
+<button class="btn btn-main" type="button" onClick="{{review}}" disabled="{{reviewDisabled}}">{{reviewLabel}}</button>
+</div>
+</div>
+
+<div style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:16px">
+<div class="panel" style="padding:24px">
+<div class="mono" style="font-size:11px;letter-spacing:.12em;color:var(--a2)">WHICH REPORTS</div>
+<ul style="margin:12px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:15px">
+<li><b>Groww</b>: Stocks Capital Gains Report and Mutual Funds Capital Gains Report, downloaded as .xlsx</li>
+<li><b>Zerodha</b>: the Tax P&amp;L capital-gains report. Your app needs a Zerodha reader for this; it isn't built yet</li>
+<li><b>Any broker</b>: your checked lots in the app's CSV template</li>
+</ul>
+<p style="margin:14px 0 0;font-size:13px;color:var(--mut)">Not accepted: P&amp;L statements, PDFs, old .xls files.</p>
+</div>
+<div class="panel" style="padding:24px">
+<div class="mono" style="font-size:11px;letter-spacing:.12em;color:var(--a2)">SEVERAL ACCOUNTS?</div>
+<p style="margin:12px 0 0;font-size:15px">Add every account's report and tag it. The ITR has no per-account rows, so the gains are added together into one return. You still get a per-account breakdown to check against each broker, and duplicate sales across files are flagged.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="lab" style="position:relative;overflow:hidden;padding:96px clamp(20px,4vw,56px)">
+<div class="contours" aria-hidden="true"></div>
+<div style="position:relative;z-index:2;max-width:1180px;margin:0 auto">
+<p class="mono" style="margin:0;font-size:12px;letter-spacing:.18em;color:var(--a2)">THE HOLDING LAB</p>
+<h2 class="disp rise" style="margin:12px 0 14px;font-size:clamp(30px,4vw,52px);line-height:1.1;letter-spacing:-.03em;font-weight:700">Short-term or long-term?</h2>
+<p style="margin:0 0 36px;max-width:640px;font-size:17px;color:var(--mut)">The same rule the app uses: more than 12 calendar months is long-term, and a sale on the one-year anniversary counts. Try the edge cases.</p>
+
+<div style="display:flex;flex-wrap:wrap;gap:24px;align-items:stretch">
+<div class="panel" style="flex:1 1 420px;min-width:0;padding:30px">
+<div style="display:flex;flex-wrap:wrap;gap:16px">
+<div class="field"><label for="buy">Buy date</label><input id="buy" class="inp" type="date" value="{{buy}}" onChange="{{setBuy}}"></div>
+<div class="field"><label for="sell">Sell date</label><input id="sell" class="inp" type="date" value="{{sell}}" onChange="{{setSell}}"></div>
+</div>
+<div class="field" style="margin-top:16px"><label for="kind">Asset type</label>
+<select id="kind" class="inp" value="{{kind}}" onChange="{{setKind}}">
+<option value="listed_equity">Listed Indian equity</option>
+<option value="equity_mf">Equity-oriented mutual fund</option>
+<option value="debt">Debt fund</option>
+</select>
+</div>
+<p class="mono" style="margin:26px 0 12px;font-size:11px;letter-spacing:.12em;color:var(--mut)">EDGE CASES</p>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{presets}}" as="p" hint-placeholder-count="5">
+<button class="chip {{p.cls}}" type="button" aria-pressed="{{p.pressed}}" onClick="{{p.pick}}">{{p.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<div class="panel result {{flipCls}}" style="flex:1 1 420px;min-width:0;padding:30px;display:flex;flex-direction:column;gap:18px" aria-live="polite">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+<div>
+<div class="mono" style="font-size:11px;letter-spacing:.12em;color:var(--mut)">CLASSIFICATION</div>
+<div class="disp term-{{r.term}}" style="font-size:64px;line-height:1;font-weight:700;margin-top:8px">{{r.term}}</div>
+</div>
+<span class="mono {{r.cls}}" style="font-size:12px;letter-spacing:.1em;border:1px solid currentColor;border-radius:999px;padding:7px 14px">{{r.status}}</span>
+</div>
+<p style="margin:0;font-size:16px">{{r.reason}}</p>
+<div>
+<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:10px" class="mono"><span>0</span><span>1 year mark</span><span>2 years</span></div>
+<div class="track"><div class="fill" style="width:{{r.barW}}%"></div><div class="mark" style="left:{{r.markL}}%"></div></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px">
+<div class="kpi" style="padding:14px"><div class="mono" style="font-size:10px;letter-spacing:.08em;color:var(--mut)">HELD</div><div style="margin-top:6px;font-weight:700;font-size:14px">{{r.held}}</div></div>
+<div class="kpi" style="padding:14px"><div class="mono" style="font-size:10px;letter-spacing:.08em;color:var(--mut)">DAYS</div><div style="margin-top:6px;font-weight:700;font-size:14px">{{r.days}}</div></div>
+<div class="kpi" style="padding:14px"><div class="mono" style="font-size:10px;letter-spacing:.08em;color:var(--mut)">SALE YEAR</div><div style="margin-top:6px;font-weight:700;font-size:14px">{{r.fy}}</div></div>
+</div>
+</div>
+</div>
+<p style="margin:22px 0 0;font-size:13px;color:var(--mut)">A teaching toy, not tax advice. The app itself checks far more: costs, STT, remarks and duplicates.</p>
+</div>
+</section>
+
+<section id="how" style="position:relative;padding:96px clamp(20px,4vw,56px)">
+<div style="max-width:1180px;margin:0 auto">
+<p class="mono" style="margin:0;font-size:12px;letter-spacing:.18em;color:var(--a2)">THREE MOVES</p>
+<h2 class="disp rise" style="margin:12px 0 28px;font-size:clamp(30px,4vw,52px);line-height:1.1;letter-spacing:-.03em;font-weight:700">Bring the numbers. Keep control.</h2>
+<div role="tablist" aria-label="Workflow steps" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px">
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="3">
+<button class="tab {{s.cls}}" type="button" role="tab" aria-selected="{{s.pressed}}" onClick="{{s.pick}}">{{s.tab}}</button>
+</sc-for>
+</div>
+<div class="deck">
+<div class="deckcard" aria-hidden="{{h0}}" style="transform: {{t0}}; opacity: {{o0}}; z-index: {{z0}}; pointer-events: {{p0}}">
+<div class="disp grad" style="font-size:110px;line-height:1;font-weight:700">01</div>
+<div style="flex:1 1 320px;min-width:0"><h3 class="disp" style="margin:0 0 12px;font-size:28px">Upload</h3><p style="margin:0;color:var(--mut);font-size:17px">Capital-gains reports from every account, tagged by account. P&amp;L statements are rejected on purpose because they double-count sales.</p></div>
+</div>
+<div class="deckcard" aria-hidden="{{h1}}" style="transform: {{t1}}; opacity: {{o1}}; z-index: {{z1}}; pointer-events: {{p1}}">
+<div class="disp grad" style="font-size:110px;line-height:1;font-weight:700">02</div>
+<div style="flex:1 1 320px;min-width:0"><h3 class="disp" style="margin:0 0 12px;font-size:28px">Review your gains</h3><p style="margin:0;color:var(--mut);font-size:17px">Short- and long-term totals, combined across accounts, with a per-account breakdown and every lot traced to its file and row.</p></div>
+</div>
+<div class="deckcard" aria-hidden="{{h2}}" style="transform: {{t2}}; opacity: {{o2}}; z-index: {{z2}}; pointer-events: {{p2}}">
+<div class="disp grad" style="font-size:110px;line-height:1;font-weight:700">03</div>
+<div style="flex:1 1 320px;min-width:0"><h3 class="disp" style="margin:0 0 12px;font-size:28px">Fill the ITR</h3><p style="margin:0;color:var(--mut);font-size:17px">Click a form card on the ring and follow the animated guide: which fields to fill, which to skip. Keep the Excel working paper for checking.</p></div>
+</div>
+</div>
+<div style="display:flex;justify-content:flex-end;margin-top:8px">
+<button class="btn btn-ghost" type="button" onClick="{{nextStep}}">{{nextStepLabel}}</button>
+</div>
+</div>
+</section>
+
+<section id="private" style="position:relative;padding:40px clamp(20px,4vw,56px) 110px">
+<div class="rise" style="max-width:980px;margin:0 auto;text-align:center">
+<p class="mono" style="margin:0;font-size:12px;letter-spacing:.18em;color:var(--a2)">PRIVATE BY DESIGN</p>
+<h2 class="disp" style="margin:14px 0 16px;font-size:clamp(28px,4vw,50px);line-height:1.12;letter-spacing:-.03em;font-weight:700">Your numbers never<br>leave the <span class="grad">tab.</span></h2>
+<p style="margin:0 auto;max-width:600px;color:var(--mut);font-size:17px">Parsing, Decimal arithmetic and the workbook all run in your browser with Pyodide. No telemetry, no analytics, no account.</p>
+<div class="panel" style="display:inline-flex;align-items:center;gap:18px;margin-top:34px;padding:18px 24px;text-align:left">
+<button class="switch {{flowCls}}" type="button" role="switch" aria-checked="{{flowOn}}" aria-label="Show where my data goes" onClick="{{toggleFlow}}"><span class="knob"></span></button>
+<div style="min-width:0">
+<div style="font-weight:700">Show where my data goes</div>
+<div style="font-size:14px;color:var(--mut)" aria-live="polite">{{flowMsg}}</div>
+</div>
+</div>
+<sc-if value="{{showFlow}}" hint-placeholder-val="{{ false }}">
+<div class="flowin" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;margin-top:30px">
+<div class="node"><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--a2)">1 / YOUR DISK</div><div style="font-weight:700;margin-top:6px">Broker XLSX or CSV</div><div style="font-size:13px;color:var(--mut)">you pick the files</div></div>
+<svg width="34" height="20" viewBox="0 0 34 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="color:var(--a2)"><path d="M2 10h28"></path><path d="M24 4l6 6-6 6"></path></svg>
+<div class="node"><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--a2)">2 / THIS BROWSER TAB</div><div style="font-weight:700;margin-top:6px">Python in the browser</div><div style="font-size:13px;color:var(--mut)">Pyodide and openpyxl do the maths</div></div>
+<svg width="34" height="20" viewBox="0 0 34 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="color:var(--a2)"><path d="M2 10h28"></path><path d="M24 4l6 6-6 6"></path></svg>
+<div class="node"><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--a2)">3 / BACK TO YOU</div><div style="font-weight:700;margin-top:6px">Excel working paper</div><div style="font-size:13px;color:var(--mut)">downloaded to your disk</div></div>
+</div>
+<p class="flowin" style="margin:18px auto 0;max-width:620px;font-size:14px;color:var(--mut)">No server ever sees your files. The only download is the public Python runtime, fetched once from a CDN.</p>
+</sc-if>
+</div>
+<p style="margin:56px auto 0;max-width:720px;text-align:center;color:var(--mut);font-size:14px">A working paper, not a tax return. Reconcile against your broker reports and check with a tax adviser before filing.</p>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{isForms}}" hint-placeholder-val="{{ false }}">
+<div class="view">
+<section style="position:relative;overflow:hidden;padding:36px clamp(20px,4vw,56px) 80px">
+<div class="ribbons" aria-hidden="true"></div>
+<div style="position:relative;z-index:2;max-width:1280px;margin:0 auto">
+<button class="btn btn-ghost" type="button" onClick="{{goHomeView}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Back to upload</button>
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:40px;margin-top:22px">
+
+<div style="flex:1 1 420px;min-width:0">
+<p class="mono" style="margin:0;font-size:12px;letter-spacing:.18em;color:var(--a2)">STEP 2 / YOUR FORMS / {{fyLabel}} / {{fyAy}}</p>
+<h1 class="disp" style="margin:16px 0 18px;font-size:clamp(36px,4.8vw,66px);line-height:1.05;letter-spacing:-.03em;font-weight:700">Your ITR-2,<br><span class="grad">one form at a time.</span></h1>
+<p style="margin:0;max-width:520px;font-size:18px;color:var(--mut)">Each card is a form or a record built from your reports. Click a card to see which fields to fill, with your values.</p>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:24px;max-width:520px">
+<div class="kpi" style="padding:16px"><div class="mono" style="font-size:10px;letter-spacing:.1em;color:var(--mut)">SHORT-TERM SHARES (20%) / INR</div><div class="mono" style="margin-top:8px;font-size:22px;font-weight:600;color:var(--a3)">{{tot.stcg}}</div></div>
+<div class="kpi" style="padding:16px"><div class="mono" style="font-size:10px;letter-spacing:.1em;color:var(--mut)">LONG-TERM SHARES / INR</div><div class="mono" style="margin-top:8px;font-size:22px;font-weight:600;color:var(--a2)">{{tot.ltcg}}</div></div>
+<div class="kpi" style="padding:16px;grid-column:1 / -1"><div class="mono" style="font-size:10px;letter-spacing:.1em;color:var(--mut)">OTHER SHORT-TERM, SLAB RATE / INR</div><div class="mono" style="margin-top:8px;font-size:22px;font-weight:600;color:var(--warn)">{{tot.other}}</div></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+<sc-for list="{{okFiles}}" as="o" hint-placeholder-count="3">
+<span class="pill" style="font-size:13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="color:var(--a2)"><path d="M5 12l5 5 9-11"></path></svg>{{o.label}}</span>
+</sc-for>
+</div>
+<div style="display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:12px 14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 8%,transparent);max-width:520px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="color:var(--warn);flex:none;margin-top:2px"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
+<p style="margin:0;font-size:13px">Prototype: these values come from demo data, not from your files. The real app fills them from your reports.</p>
+</div>
+<p class="mono" style="margin:20px 0 0;font-size:12px;color:var(--mut);letter-spacing:.04em">Drag to spin. Click a card to open it. Enter works too.</p>
+</div>
+
+<div style="flex:1 1 520px;min-width:0;display:flex;flex-direction:column;align-items:center">
+<div class="stage {{stageCls}}" tabindex="0" role="group" aria-roledescription="carousel" aria-label="Your forms: drag or use arrow keys to rotate, Enter to open the front card" onPointerDown="{{down}}" onPointerMove="{{move}}" onPointerUp="{{up}}" onPointerCancel="{{up}}" onPointerEnter="{{enter}}" onPointerLeave="{{leave}}" onKeyDown="{{key}}" style="width:100%;height:520px;display:flex;align-items:center;justify-content:center">
+<div class="scaler">
+<div class="tilt" style="transform: rotateX({{tiltX}}deg) rotateY({{tiltY}}deg)">
+<div class="ring" style="transform: rotateY({{angle}}deg); transition: {{ringTr}}">
+<div class="halo h1r" aria-hidden="true"></div>
+<div class="halo h2r" aria-hidden="true"></div>
+<div class="orb" aria-hidden="true" style="transform: rotateY({{negAngle}}deg); transition: {{ringTr}}">₹</div>
+
+<div class="card3 {{on0}}" style="transform:rotateY(0deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a3)"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">SCHEDULE CG / A2</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">STCG 111A</div><div class="mono" style="font-size:14px;color:var(--a3)">₹{{tot.stcg}}</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open short-term equity gains (A2) with your values" onClick="{{c0}}"></button>
+</div>
+<div class="card3 {{on1}}" style="transform:rotateY(45deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--warn)"><circle cx="12" cy="12" r="9"></circle><path d="M9 9h6M9 12h6M11 9c3 0 3 6 0 6l4 3"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">SCHEDULE CG / A5</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">Other STCG</div><div class="mono" style="font-size:14px;color:var(--warn)">₹{{tot.other}}</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open other short-term gains (A5) with your values" onClick="{{c1}}"></button>
+</div>
+<div class="card3 {{on2}}" style="transform:rotateY(90deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a2)"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">SCHEDULE 112A + B3</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">LTCG 112A</div><div class="mono" style="font-size:14px;color:var(--a2)">₹{{tot.ltcg}}</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open long-term equity gains (112A) with your values" onClick="{{c2}}"></button>
+</div>
+<div class="card3 {{on3}}" style="transform:rotateY(135deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a1)"><path d="M7 7h12l-3-3"></path><path d="M17 17H5l3 3"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">SCHEDULE CG / E</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">Set-off</div><div class="mono" style="font-size:14px;color:var(--a1)">losses vs gains</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open the set-off table E" onClick="{{c3}}"></button>
+</div>
+<div class="card3 {{on4}}" style="transform:rotateY(180deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a1)"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M3 11h18"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">SCHEDULE CG / F</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">Quarters</div><div class="mono" style="font-size:14px;color:var(--a1)">by sale date</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open the quarter breakup table F" onClick="{{c4}}"></button>
+</div>
+<div class="card3 {{on5}}" style="transform:rotateY(225deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a2)"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 10h18"></path><path d="M9 4v16"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">YOUR RECORD</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">Excel</div><div class="mono" style="font-size:14px;color:var(--a2)">9 sheets</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open the Excel working paper" onClick="{{c5}}"></button>
+</div>
+<div class="card3 {{on6}}" style="transform:rotateY(270deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a3)"><rect x="2" y="6" width="9" height="13" rx="2"></rect><rect x="13" y="4" width="9" height="15" rx="2"></rect></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">BY ACCOUNT</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">Accounts</div><div class="mono" style="font-size:14px;color:var(--a3)">per broker</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open per-account totals" onClick="{{c6}}"></button>
+</div>
+<div class="card3 {{on7}}" style="transform:rotateY(315deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a1)"><path d="M6 2h9l5 5v15H6z"></path><path d="M14 2v6h6"></path><path d="M9 13h8"></path><path d="M9 17h8"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">EVERY SALE</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">Lots</div><div class="mono" style="font-size:14px;color:var(--a1)">{{tot.lotCount}} lots</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open the list of lots" onClick="{{c7}}"></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="panel" style="width:100%;max-width:560px;padding:20px 24px;margin-top:4px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+<div style="min-width:0;flex:1 1 260px" aria-live="polite">
+<div class="mono" style="font-size:11px;letter-spacing:.12em;color:var(--a2)">{{cardKicker}}</div>
+<p style="margin:6px 0 0;font-size:15px;color:var(--ink)">{{cardDesc}}</p>
+</div>
+<div style="display:flex;align-items:center;gap:8px">
+<button class="icon-btn" type="button" aria-label="Previous card" onClick="{{prev}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+<button class="icon-btn" type="button" aria-label="{{pauseLabel}}" onClick="{{togglePause}}">
+<sc-if value="{{paused}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg></sc-if>
+<sc-if value="{{playing}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"></path></svg></sc-if>
+</button>
+<button class="icon-btn" type="button" aria-label="Next card" onClick="{{next}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+</div>
+</div>
+<div style="display:flex;justify-content:center;gap:2px;margin-top:8px">
+<sc-for list="{{dots}}" as="d" hint-placeholder-count="8">
+<span class="dotwrap"><button class="dot {{d.cls}}" type="button" aria-label="{{d.label}}" aria-pressed="{{d.pressed}}" onClick="{{d.pick}}"></button></span>
+</sc-for>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</section>
+</div>
+</sc-if>
+
+
+<sc-if value="{{dlgOpen}}" hint-placeholder-val="{{ false }}">
+<div class="ovl" onClick="{{closeDlg}}" onKeyDown="{{dlgKey}}">
+<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title" onClick="{{stop}}">
+<div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-start">
+<div style="min-width:0;flex:1 1 420px">
+<p class="mono" style="margin:0;font-size:12px;letter-spacing:.16em;color:var(--a2)">ITR-2 / {{fyAy}} / {{D.kicker}}</p>
+<h2 id="dlg-title" class="disp" style="margin:8px 0 6px;font-size:clamp(24px,3vw,36px);line-height:1.15;letter-spacing:-.02em;font-weight:700">{{D.title}}</h2>
+<p style="margin:0;font-size:15px;color:var(--mut)">{{D.sub}}</p>
+</div>
+<button id="dlg-close" class="icon-btn" type="button" aria-label="Close and go back to the ring" onClick="{{closeDlg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+
+<sc-if value="{{isFormDlg}}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:22px 0 16px">
+<div class="seg" role="group" aria-label="Left side">
+<button type="button" class="{{segForm}}" aria-pressed="{{segFormP}}" onClick="{{showForm}}">Form</button>
+<button type="button" class="{{segShot}}" aria-pressed="{{segShotP}}" onClick="{{showShot}}">My portal screenshots</button>
+</div>
+<div class="seg" role="group" aria-label="Which fields">
+<button type="button" class="{{segAll}}" aria-pressed="{{segAllP}}" onClick="{{showAll}}">All fields</button>
+<button type="button" class="{{segFill}}" aria-pressed="{{segFillP}}" onClick="{{showFill}}">Only what I fill</button>
+</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+<div style="flex:1 1 500px;min-width:0">
+<sc-if value="{{modeForm}}" hint-placeholder-val="{{ true }}">
+<div class="paperbox" tabindex="0" role="region" aria-label="{{formAria}}" onWheel="{{userScroll}}" onTouchStart="{{userScroll}}">
+<sc-for list="{{pages}}" as="pg" hint-placeholder-count="2">
+<div class="page">
+<div class="pghead"><span>{{pg.left}}</span><span>{{pg.right}}</span></div>
+<sc-for list="{{pg.items}}" as="it" hint-placeholder-count="6">
+<sc-if value="{{it.isTitle}}" hint-placeholder-val="{{ false }}"><div class="ptitle">{{it.text}}</div></sc-if>
+<sc-if value="{{it.isH}}" hint-placeholder-val="{{ false }}"><div class="ph">{{it.text}}</div></sc-if>
+<sc-if value="{{it.isNote}}" hint-placeholder-val="{{ false }}"><div class="pnote">{{it.text}}</div></sc-if>
+<sc-if value="{{it.isRow}}" hint-placeholder-val="{{ true }}"><div class="prow {{it.cls}}" data-f="{{it.f}}"><span class="pnum">{{it.num}}</span><span class="plabel {{it.ind}}">{{it.text}}</span><span class="pbox {{it.boxCls}}"></span></div></sc-if>
+<sc-if value="{{it.isGrid}}" hint-placeholder-val="{{ false }}">
+<table class="ftable">
+<thead><tr><th>Type of capital gain / Date</th><th>Upto 15/6 (i)</th><th>16/6 to 15/9 (ii)</th><th>16/9 to 15/12 (iii)</th><th>16/12 to 15/3 (iv)</th><th>16/3 to 31/3 (v)</th></tr></thead>
+<tbody>
+<sc-for list="{{gridRows}}" as="gr" hint-placeholder-count="7">
+<tr class="{{gr.cls}}"><td>{{gr.label}}</td>
+<sc-for list="{{gr.cells}}" as="ce" hint-placeholder-count="5"><td class="{{ce.cls}}" data-f="{{ce.f}}"></td></sc-for>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</sc-if>
+</sc-for>
+</div>
+</sc-for>
+</div>
+<p style="margin:12px 0 0;font-size:13px;color:var(--mut)">Recreated from the notified ITR-2 form for AY 2026-27, laid out page by page. It scrolls with the list; scroll it yourself to pause.</p>
+</sc-if>
+<sc-if value="{{modeShot}}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{hasShot}}" hint-placeholder-val="{{ false }}">
+<div class="paperbox" tabindex="0" role="region" aria-label="Your portal screenshots">
+<sc-for list="{{shotList}}" as="sh" hint-placeholder-count="1">
+<img class="shot" src="{{sh.url}}" alt="{{sh.alt}}" style="margin-bottom:14px">
+</sc-for>
+</div>
+<button class="btn btn-ghost" type="button" onClick="{{clearShot}}" style="margin-top:12px">Remove screenshots</button>
+</sc-if>
+<sc-if value="{{noShot}}" hint-placeholder-val="{{ true }}">
+<label for="shotfile" class="drop" style="padding:56px 20px">
+<input id="shotfile" class="vh" type="file" accept="image/*" multiple onChange="{{pickShot}}">
+<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a2)"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="M21 16l-5-5-8 8"></path></svg>
+<span class="disp" style="font-size:17px;font-weight:700">Add screenshots of this portal page</span>
+<span style="font-size:14px;color:var(--mut);max-width:420px">Add one or more, in order. They stack in a scrollable box next to your values and stay in this tab.</span>
+</label>
+</sc-if>
+</sc-if>
+</div>
+
+<div style="flex:1 1 400px;min-width:0">
+<div class="mono" style="font-size:12px;letter-spacing:.14em;color:var(--a2);margin-bottom:10px">YOUR VALUES / FROM YOUR REPORTS</div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+<button class="icon-btn" type="button" aria-label="Previous field" onClick="{{dPrev}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+<button class="icon-btn" type="button" aria-label="{{dPlayLabel}}" onClick="{{dToggle}}">
+<sc-if value="{{dPaused}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg></sc-if>
+<sc-if value="{{dPlaying}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"></path></svg></sc-if>
+</button>
+<button class="icon-btn" type="button" aria-label="Next field" onClick="{{dNext}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+<span class="mono" style="font-size:13px;color:var(--mut)">{{dCount}}</span>
+<div class="prog"><div style="width:{{dProg}}%"></div></div>
+</div>
+<div class="listbox" aria-live="polite">
+<sc-for list="{{guideRows}}" as="g" hint-placeholder-count="8">
+<button class="fl {{g.cls}}" type="button" id="{{g.id}}" aria-current="{{g.current}}" onClick="{{g.pick}}">
+<span class="letter">{{g.letter}}</span>
+<span style="min-width:0;flex:1 1 auto"><span style="display:block;font-weight:700;font-size:14px">{{g.label}}</span><span style="display:block;font-size:13px;color:var(--mut)">{{g.note}}</span></span>
+<span style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px;max-width:46%"><span class="tag act-{{g.act}}">{{g.tagText}}</span><span class="mono {{g.valCls}}" style="font-size:14px;font-weight:600;text-align:right;overflow-wrap:anywhere">{{g.mine}}</span></span>
+</button>
+</sc-for>
+</div>
+<p style="margin:14px 0 0;font-size:13px;color:var(--mut)">{{D.footer}}</p>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isExcelDlg}}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:24px">
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between">
+<div>
+<div class="disp" style="font-size:19px;font-weight:700;overflow-wrap:anywhere">itr-stock-assist-{{fy}}-WORKING.xlsx</div>
+<div style="font-size:14px;color:var(--mut)">{{excelFrom}}</div>
+</div>
+<button class="btn btn-main" type="button" onClick="{{download}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v12"></path><path d="M7 11l5 5 5-5"></path><path d="M4 20h16"></path></svg>Download Excel</button>
+</div>
+<p style="margin:10px 0 0;font-size:14px;color:var(--warn)" aria-live="polite">{{dlMsg}}</p>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:18px">
+<span class="pill">Filing review</span><span class="pill">Filing groups</span><span class="pill">Filing map</span><span class="pill">References</span><span class="pill">Summary</span><span class="pill">Disposed lots</span><span class="pill">Review issues</span><span class="pill">Source rows</span><span class="pill">Import manifest</span>
+</div>
+<div class="panel" style="margin-top:22px;padding:20px 22px">
+<div class="mono" style="font-size:11px;letter-spacing:.12em;color:var(--a2)">STUCK ON A FIELD?</div>
+<p style="margin:8px 0 0;font-size:15px">Give this Excel file to Claude and ask, for example, "Which values go in Schedule 112A?" or "Why is this lot blocked?". Every figure in it points back to your file, sheet and row.</p>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isAcctDlg}}" hint-placeholder-val="{{ false }}">
+<div style="overflow-x:auto;margin-top:24px">
+<table class="tbl">
+<caption style="text-align:left;color:var(--mut);padding:0 0 10px;font-size:13px">For checking against each broker. The ITR only takes the combined row.</caption>
+<thead><tr><th>ACCOUNT</th><th class="r">STCG 111A / INR</th><th class="r">OTHER STCG / INR</th><th class="r">LTCG 112A / INR</th><th class="r">LOTS</th></tr></thead>
+<tbody>
+<sc-for list="{{acctRows}}" as="a" hint-placeholder-count="2">
+<tr><td>{{a.name}}</td><td class="r {{a.sCls}}">{{a.stcg}}</td><td class="r {{a.oCls}}">{{a.other}}</td><td class="r {{a.lCls}}">{{a.ltcg}}</td><td class="r">{{a.lots}}</td></tr>
+</sc-for>
+<tr><td style="font-weight:700">Combined, goes in the ITR</td><td class="r" style="font-weight:700">{{tot.stcg}}</td><td class="r" style="font-weight:700">{{tot.other}}</td><td class="r" style="font-weight:700">{{tot.ltcg}}</td><td class="r" style="font-weight:700">{{tot.lotCount}}</td></tr>
+</tbody>
+</table>
+</div>
+</sc-if>
+
+<sc-if value="{{isLotsDlg}}" hint-placeholder-val="{{ false }}">
+<div style="overflow-x:auto;margin-top:24px">
+<table class="tbl">
+<caption style="text-align:left;color:var(--mut);padding:0 0 10px;font-size:13px">Gain = sale value - cost - expenses. The Excel keeps each lot's file, sheet and row.</caption>
+<thead><tr><th>LOT</th><th>ACCOUNT</th><th>SOLD</th><th>TERM</th><th class="r">SALE VALUE</th><th class="r">COST</th><th class="r">GAIN / INR</th></tr></thead>
+<tbody>
+<sc-for list="{{lotRows}}" as="l" hint-placeholder-count="5">
+<tr><td>{{l.asset}}</td><td>{{l.acct}}</td><td class="mono" style="font-size:13px">{{l.sold}}</td><td class="mono {{l.termCls}}">{{l.term}}</td><td class="r">{{l.p}}</td><td class="r">{{l.c}}</td><td class="r {{l.gCls}}">{{l.g}}</td></tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</sc-if>
+
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-top:24px;padding-top:18px;border-top:1px solid var(--line)">
+<span style="font-size:14px;color:var(--mut)">Click outside or press Esc to go back to the ring.</span>
+<button class="btn btn-ghost" type="button" onClick="{{nextDlg}}">{{nextDlgLabel}}</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+
+<footer style="border-top:1px solid var(--line);padding:24px;text-align:center;color:var(--mut);font-size:13px">ITR Stock Assist / private by design, transparent by default</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":4300}}'>
+function itrDim(y, m0) { return new Date(Date.UTC(y, m0 + 1, 0)).getUTCDate(); }
+function itrAnchor(y, m, d, add) {
+  var t = new Date(Date.UTC(y, m - 1 + add, 1));
+  var ty = t.getUTCFullYear(), tm = t.getUTCMonth();
+  return Date.UTC(ty, tm, Math.min(d, itrDim(ty, tm)));
+}
+function itrClassify(buy, sell, kind) {
+  var re = /^(\d{4})-(\d{2})-(\d{2})$/;
+  var b = re.exec(buy || ''), s = re.exec(sell || '');
+  var out = { term: '—', status: 'CHECK DATES', cls: 'st-mut', reason: 'Pick both a buy date and a sell date.', held: '—', days: '—', fy: '—', barW: 0, markL: 50 };
+  if (!b || !s) return out;
+  var by = +b[1], bm = +b[2], bd = +b[3], sy = +s[1], sm = +s[2], sd = +s[3];
+  var bt = Date.UTC(by, bm - 1, bd), st = Date.UTC(sy, sm - 1, sd);
+  if (isNaN(bt) || isNaN(st)) return out;
+  if (st <= bt) { out.reason = 'The sale has to come after the purchase.'; return out; }
+  var days = Math.round((st - bt) / 864e5);
+  var months = (sy - by) * 12 + (sm - bm);
+  while (months > 0 && itrAnchor(by, bm, bd, months) > st) months--;
+  var rem = Math.round((st - itrAnchor(by, bm, bd, months)) / 864e5);
+  var leap = bm === 2 && bd === 29;
+  var anniv = leap ? Date.UTC(by + 1, 2, 1) : Date.UTC(by + 1, bm - 1, bd);
+  var annivDays = Math.round((anniv - bt) / 864e5);
+  var fyStart = sm >= 4 ? sy : sy - 1;
+  var fyLabel = 'FY ' + fyStart + '-' + String(fyStart + 1).slice(2);
+  var scale = 730;
+  out.days = days.toLocaleString('en-IN') + (days === 1 ? ' day' : ' days');
+  var yrs = Math.floor(months / 12), mo = months % 12;
+  out.held = (yrs ? yrs + (yrs === 1 ? ' year, ' : ' years, ') : '') + mo + (mo === 1 ? ' month, ' : ' months, ') + rem + (rem === 1 ? ' day' : ' days');
+  out.fy = fyLabel;
+  out.barW = Math.round(Math.min(days / scale, 1) * 1000) / 10;
+  out.markL = Math.round(Math.min(annivDays / scale, 1) * 1000) / 10;
+  out.term = st >= anniv ? 'LTCG' : 'STCG';
+  out.status = 'CLASSIFIED'; out.cls = 'st-ok';
+  out.reason = out.term === 'LTCG'
+    ? 'Sold on or after the one-year anniversary, so it is long-term.'
+    : 'Sold before the one-year anniversary, so it is short-term.';
+  if (kind === 'debt') { out.term = '—'; out.status = 'BLOCKED'; out.cls = 'st-warn'; out.reason = 'Debt funds stay visible but excluded: no debt-fund rules are implemented.'; return out; }
+  if (bt <= Date.UTC(2018, 0, 31)) { out.status = 'BLOCKED'; out.cls = 'st-warn'; out.reason = 'Bought on or before 31 Jan 2018: blocked for grandfathering review, not guessed.'; return out; }
+  if (leap && sy === by + 1 && sm === 2 && sd === 28) { out.term = '—'; out.status = 'BLOCKED'; out.cls = 'st-warn'; out.reason = 'The 29 Feb to 28 Feb boundary is blocked for advice rather than guessed.'; return out; }
+  if (fyStart !== 2024 && fyStart !== 2025) { out.status = 'EXCLUDED'; out.cls = 'st-mut'; out.reason = fyLabel + ' is outside the validated years (FY 2024-25, FY 2025-26), so it never enters totals.'; return out; }
+  return out;
+}
+
+var ITR_THEMES = [
+  { id: 'aurora', label: 'Aurora theme', c1: '#8b7bff', c2: '#3ef0c8' },
+  { id: 'ember', label: 'Ember theme', c1: '#ff8a4c', c2: '#ffd166' },
+  { id: 'glacier', label: 'Glacier theme', c1: '#4de8ff', c2: '#c6ff4d' }
+];
+var ITR_HOME_CARDS = [
+  { k: 'LISTED EQUITY / LTCG', d: 'A sale on or after the one-year anniversary of purchase is long-term. Calendar months, not a 365-day count.' },
+  { k: 'EQUITY MUTUAL FUND / STCG', d: 'Sold before the anniversary? Short-term. The same 12-month rule applies to equity-oriented funds.' },
+  { k: 'MULTIPLE ACCOUNTS', d: 'Upload reports from every broker account. The return has no per-account rows, so gains are combined, with a breakdown kept for checking.' },
+  { k: 'SOURCE TRACE', d: 'Each lot keeps its file, sheet and row, so every number in the workbook points back to its source.' },
+  { k: 'WORKING PAPER', d: 'A nine-sheet Excel file: filing review, filing groups, field map, lots, issues and source rows.' },
+  { k: 'ITR WALKTHROUGH', d: 'After you upload, every ITR-2 form gets its own card, with the exact values to fill from your reports.' }
+];
+var ITR_FORM_CARDS = [
+  { k: 'SCHEDULE CG / A2 / STCG (111A)', d: 'Short-term gains on shares and equity funds, taxed at 20%. Click to see each field and your value.' },
+  { k: 'SCHEDULE CG / A5 / OTHER STCG', d: 'Gold and silver funds, non-equity ETFs and other non-equity funds. Taxed at your slab rate.' },
+  { k: 'SCHEDULE 112A / LTCG', d: 'Long-term gains on shares and equity funds, plus where the total lands in Schedule CG B3.' },
+  { k: 'SCHEDULE CG / E / SET-OFF', d: 'How any loss left after each item nets off is set against your gains.' },
+  { k: 'SCHEDULE CG / F / QUARTERS', d: 'Which quarter each gain arose in, from your sale dates.' },
+  { k: 'EXCEL WORKING PAPER', d: 'Your separate record of everything. Download it to check, or give it to Claude with a question.' },
+  { k: 'YOUR ACCOUNTS', d: 'Totals for each broker account, so you can check them against each broker.' },
+  { k: 'YOUR LOTS', d: 'Every sale that went into the totals, with its account, date and gain.' }
+];
+var ITR_PRESETS = [
+  { label: 'Exactly one year', buy: '2024-06-14', sell: '2025-06-14', kind: 'listed_equity' },
+  { label: 'One day short', buy: '2024-06-14', sell: '2025-06-13', kind: 'listed_equity' },
+  { label: 'Leap-day trap', buy: '2024-02-29', sell: '2025-02-28', kind: 'listed_equity' },
+  { label: 'Bought before 2018', buy: '2017-11-20', sell: '2024-09-10', kind: 'listed_equity' },
+  { label: 'Outside valid years', buy: '2022-05-02', sell: '2023-08-01', kind: 'equity_mf' },
+  { label: 'Debt fund', buy: '2024-06-14', sell: '2025-08-01', kind: 'debt' }
+];
+var ITR_STEPS = ['01 Upload', '02 Review', '03 Fill the ITR'];
+var ITR_BROKERS = { groww: 'Groww', zerodha: 'Zerodha', other: 'Other' };
+var ITR_DEMO_FILES = [
+  { name: 'groww-stocks-capital-gains-demo.xlsx', size: 48000 },
+  { name: 'groww-mutual-funds-capital-gains-demo.xlsx', size: 31000 },
+  { name: 'zerodha-tax-pnl-demo.xlsx', size: 56000 }
+];
+/* Demo lots in paise. The real app replaces this list with the engine's included lots. */
+var ITR_DEMO_LOTS = [
+  { asset: 'Demo stock A', acct: 'Groww', kind: 'eq', term: 'STCG', sold: '2025-05-20', p: 4825000, c: 4510000, e: 3250 },
+  { asset: 'Demo stock B', acct: 'Zerodha', kind: 'eq', term: 'STCG', sold: '2025-11-02', p: 2140000, c: 2205000, e: 1820 },
+  { asset: 'Demo stock C', acct: 'Groww', kind: 'eq', term: 'LTCG', sold: '2025-08-12', p: 11280000, c: 8640000, e: 5400 },
+  { asset: 'Demo stock D', acct: 'Zerodha', kind: 'eq', term: 'LTCG', sold: '2026-01-20', p: 6430000, c: 5125000, e: 3080 },
+  { asset: 'Demo equity fund', acct: 'Groww', kind: 'eq', term: 'LTCG', sold: '2025-08-30', p: 4000000, c: 3360000, e: 0 },
+  { asset: 'Demo gold fund-of-funds', acct: 'Groww', kind: 'other', term: 'STCG', sold: '2025-12-10', p: 2500000, c: 2050000, e: 0 },
+  { asset: 'Demo silver ETF', acct: 'Zerodha', kind: 'other', term: 'STCG', sold: '2026-02-05', p: 900000, c: 960000, e: 1200 }
+];
+var ITR_QUARTERS = ['up to 15 June', '16 June to 15 Sep', '16 Sep to 15 Dec', '16 Dec to 15 March', '16 March to 31 March'];
+var ITR_SECTIONS = [null, null, 'upload', 'excel', 'lab', 'private'];
+var ITR_MAX = 10, ITR_MAXSIZE = 2 * 1024 * 1024;
+var ITR_DLG_ORDER = ['stcg', 'other', 'ltcg', 'setoff', 'tablef', 'excel', 'accounts', 'lots'];
+var ITR_DLG_NAMES = { stcg: 'STCG (A2, 111A)', other: 'Other STCG (A5)', ltcg: 'LTCG (112A)', setoff: 'Set-off (E)', tablef: 'Quarter breakup (F)', excel: 'Excel working paper', accounts: 'Your accounts', lots: 'Your lots' };
+function itrFmt(paise) { var neg = paise < 0, v = Math.abs(paise) / 100; return (neg ? '-' : '') + v.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function itrQuarter(iso) { var m = +iso.slice(5, 7), d = +iso.slice(8, 10), md = m * 100 + d; if (md >= 401 && md <= 615) return 0; if (md >= 616 && md <= 915) return 1; if (md >= 916 && md <= 1215) return 2; if (md >= 316 && md <= 331) return 4; return 3; }
+function itrTotals(lots) {
+  function z() { return { p: 0, c: 0, e: 0, g: 0, n: 0 }; }
+  var T = { S: z(), L: z(), O: z(), acct: {}, q: { S: [0, 0, 0, 0, 0], L: [0, 0, 0, 0, 0], O: [0, 0, 0, 0, 0] }, order: [] };
+  lots.forEach(function (l) {
+    var k = l.kind === 'other' ? 'O' : (l.term === 'STCG' ? 'S' : 'L');
+    var b = T[k], g = l.p - l.c - l.e;
+    b.p += l.p; b.c += l.c; b.e += l.e; b.g += g; b.n++;
+    if (!T.acct[l.acct]) { T.acct[l.acct] = { S: 0, L: 0, O: 0, n: 0 }; T.order.push(l.acct); }
+    T.acct[l.acct][k] += g; T.acct[l.acct].n++;
+    T.q[k][itrQuarter(l.sold)] += g;
+  });
+  return T;
+}
+function itrForms(T) {
+  var S = T.S, L = T.L, O = T.O, F = itrFmt;
+  var Q = ['(i) upto 15/6', '(ii) 16/6 to 15/9', '(iii) 16/9 to 15/12', '(iv) 16/12 to 15/3', '(v) 16/3 to 31/3'];
+  function qf(row, label, v, i) {
+    var act = v > 0 ? 'FILL' : v < 0 ? 'CHECK' : 'SKIP';
+    return [row + Q[i].split(' ')[0], label + ' ' + Q[i].slice(Q[i].indexOf(' ') + 1), act, v === 0 ? '' : F(v),
+      act === 'FILL' ? 'Gain from your sales in this quarter' : act === 'CHECK' ? 'A net loss in this quarter; set it off before entering' : 'No sales in this quarter'];
+  }
+  function row(num, text, f, ind, dim, nobox) { return { t: 'row', num: num, text: text, f: f, ind: ind || '', dim: !!dim, nobox: !!nobox }; }
+  var HEAD = 'FORM ITR-2 / AY 2026-27';
+  var tf = [];
+  T.q.S.forEach(function (v, i) { tf.push(qf('1', 'STCG taxable at 20%', v, i)); });
+  tf.push(['2', 'STCG taxable at 30%', 'SKIP', '', 'Not used for listed shares, funds or ETFs']);
+  T.q.O.forEach(function (v, i) { tf.push(qf('3', 'STCG at applicable rates', v, i)); });
+  tf.push(['4', 'STCG taxable at DTAA rates', 'SKIP', '', 'Not used for residents']);
+  T.q.L.forEach(function (v, i) { tf.push(qf('5', 'LTCG taxable at 12.5%', v, i)); });
+  tf.push(['6', 'LTCG taxable at DTAA rates', 'SKIP', '', 'Not used for residents']);
+  tf.push(['7', 'Virtual Digital Assets at 30%', 'SKIP', '', 'Not applicable']);
+  var gainCol = function (v) { return v > 0 ? F(v) : '0.00'; };
+  var lossTotal = [S.g, O.g, L.g].filter(function (v) { return v < 0; }).reduce(function (a, v) { return a - v; }, 0);
+  var aHead = { t: 'h', text: 'A(I). Short-term Capital Gains (sub-items 3 and 4 are not applicable for residents)' };
+  var bHead = { t: 'h', text: 'B(I). Long-term capital gain (LTCG) (sub-items 4, 5, 6 and 7 are not applicable for residents)' };
+  return {
+    stcg: {
+      kicker: 'SCHEDULE CG / A(I) ITEM 2 / SECTION 111A', title: 'Short-term gains on shares: ₹' + F(S.g),
+      sub: 'Listed shares and equity funds with STT paid, held 12 months or less. Taxed at 20%. One entry for all your accounts combined.',
+      formTitle: 'Schedule CG, item A2',
+      fields: [
+        ['2a', 'Full value of consideration', 'FILL', F(S.p), 'Total sale value of all short-term equity lots, every account combined'],
+        ['2b(i)', 'Cost of acquisition without indexation', 'FILL', F(S.c), 'Total purchase cost of those lots'],
+        ['2b(ii)', 'Cost of Improvement without indexation', 'SKIP', '', 'Not applicable to shares or fund units'],
+        ['2b(iii)', 'Expenditure wholly and exclusively in connection with transfer', 'FILL', F(S.e), 'Verified brokerage and charges. STT is not deductible'],
+        ['2b(iv)', 'Total (i + ii + iii)', 'AUTO', F(S.c + S.e), 'The portal adds this up; check it matches'],
+        ['2c', 'Balance (2a - biv)', 'AUTO', F(S.g), 'Should match your net short-term equity gain'],
+        ['2d', 'Loss to be disallowed u/s 94(7) or 94(8)', 'CHECK', 'Usually blank', 'Only for dividend or bonus stripping; the Excel leaves it unknown'],
+        ['2e', 'Short-term capital gain on equity share or equity oriented MF (STT paid) (2c + 2d)', 'AUTO', F(S.g), 'Carried into A9 and the set-off table E']
+      ],
+      pages: [
+        { left: HEAD, right: 'Schedule Capital Gains / page 1', items: [
+          { t: 'title', text: 'Schedule Capital Gains' },
+          aHead,
+          row('1', 'From sale of land or building or both', -1, '', true, true),
+          row('2', 'From sale of equity share or unit of equity oriented Mutual Fund (MF) or unit of a business trust on which STT is paid under section 111A or 115AD(1)(ii) proviso (for FII)', -1, '', false, true),
+          row('a', 'Full value of consideration', 0, 'ind1'),
+          row('b', 'Deductions under section 48', -1, 'ind1', false, true),
+          row('i', 'Cost of acquisition without indexation', 1, 'ind2'),
+          row('ii', 'Cost of Improvement without indexation', 2, 'ind2'),
+          row('iii', 'Expenditure wholly and exclusively in connection with transfer', 3, 'ind2'),
+          row('iv', 'Total (i + ii + iii)', 4, 'ind2'),
+          row('c', 'Balance (2a - biv)', 5, 'ind1'),
+          row('d', 'Loss to be disallowed u/s 94(7) or 94(8)', 6, 'ind1'),
+          row('e', 'Short-term capital gain on equity share or equity oriented MF (STT paid) (2c + 2d)', 7, 'ind1'),
+          row('3, 4', 'For non-residents only', -1, '', true, true),
+          row('5', 'From sale of assets other than at A1 or A2 or A3 or A4 above (see the Other STCG card)', -1, '', true, true),
+          row('6 - 9', 'Deemed STCG, pass-through income, DTAA items, Total STCG (A9)', -1, '', true, true)
+        ] },
+        { left: HEAD, right: 'Schedule Capital Gains / page 2', items: [
+          bHead,
+          { t: 'note', text: 'Item 3 receives your Schedule 112A total automatically. See the LTCG card.' },
+          { t: 'h', text: 'C1. Sum of Capital Gain Incomes / C2. Virtual Digital Assets / C3. Income chargeable under the head Capital Gains' },
+          { t: 'note', text: 'Calculated by the portal from table E.' },
+          { t: 'h', text: 'D. Information about deduction claimed against Capital Gains' },
+          { t: 'note', text: 'Only for sections 54 / 54B / 54EC / 54F / 115F, such as reinvesting in a house. Usually skipped for share trading.' },
+          { t: 'h', text: 'E. Set-off of current year capital losses with current year capital gains' },
+          { t: 'note', text: 'See the Set-off card.' },
+          { t: 'h', text: 'F. Information about accrual/receipt of capital gain' },
+          { t: 'note', text: 'See the Quarter breakup card.' }
+        ] }
+      ],
+      footer: 'Gold or silver funds, debt funds and non-equity ETFs do not go here. They go in item A5 (Other STCG card).'
+    },
+    other: {
+      kicker: 'SCHEDULE CG / A(I) ITEM 5 / SLAB RATE', title: 'Other short-term gains: ₹' + F(O.g),
+      sub: 'Gold and silver fund-of-funds, non-equity ETFs and other non-equity funds held for a short period. Taxed at your slab rate, not 20%. Confirm the treatment with your adviser.',
+      formTitle: 'Schedule CG, item A5',
+      fields: [
+        ['5a(i)', 'Full value of consideration in respect of unquoted shares (ia, ib, ic)', 'SKIP', '', 'Only for unquoted shares'],
+        ['5a(ii)', 'Full value of consideration in respect of assets other than unquoted shares', 'FILL', F(O.p), 'Total sale value of these non-equity lots, every account combined'],
+        ['5a(iii)', 'Total (ic + ii)', 'AUTO', F(O.p), 'The portal adds this up'],
+        ['5b(i)', 'Cost of acquisition without indexation', 'FILL', F(O.c), 'Total purchase cost of those lots'],
+        ['5b(ii)', 'Cost of Improvement without indexation', 'SKIP', '', 'Not applicable to fund units'],
+        ['5b(iii)', 'Expenditure wholly and exclusively in connection with transfer', 'FILL', F(O.e), 'Verified brokerage and charges'],
+        ['5b(iv)', 'Total (i + ii + iii)', 'AUTO', F(O.c + O.e), 'The portal adds this up; check it matches'],
+        ['5c', 'Balance (5aiii - biv)', 'AUTO', F(O.g), 'Gains and losses inside this item net off here'],
+        ['5d', 'Loss to be disallowed u/s 94(7) or 94(8)', 'CHECK', 'Usually blank', 'Only for dividend or bonus stripping'],
+        ['5e', 'Short-term capital gain on assets at A5 above (5c + 5d)', 'AUTO', F(O.g), 'Taxed at your slab rate']
+      ],
+      pages: [
+        { left: HEAD, right: 'Schedule Capital Gains / page 1', items: [
+          { t: 'title', text: 'Schedule Capital Gains' },
+          aHead,
+          row('1 - 4', 'Land or building, equity under 111A (STCG card), non-resident items', -1, '', true, true),
+          row('5', 'From sale of assets other than at A1 or A2 or A3 or A4 above', -1, '', false, true),
+          row('a', 'Full value of consideration', -1, 'ind1', false, true),
+          row('i', 'In case assets sold include unquoted shares (ia, ib, ic)', 0, 'ind2'),
+          row('ii', 'Full value of consideration in respect of assets other than unquoted shares', 1, 'ind2'),
+          row('iii', 'Total (ic + ii)', 2, 'ind2'),
+          row('b', 'Deductions under section 48', -1, 'ind1', false, true),
+          row('i', 'Cost of acquisition without indexation', 3, 'ind2'),
+          row('ii', 'Cost of Improvement without indexation', 4, 'ind2'),
+          row('iii', 'Expenditure wholly and exclusively in connection with transfer', 5, 'ind2'),
+          row('iv', 'Total (i + ii + iii)', 6, 'ind2'),
+          row('c', 'Balance (5aiii - biv)', 7, 'ind1'),
+          row('d', 'Loss to be disallowed u/s 94(7) or 94(8)', 8, 'ind1'),
+          row('e', 'STCG on assets at A5 above (5c + 5d)', 9, 'ind1')
+        ] }
+      ],
+      footer: 'Your app currently leaves these lots out of its totals. They still have to be reported here.'
+    },
+    ltcg: {
+      kicker: 'SCHEDULE 112A AND SCHEDULE CG B(I) ITEM 3', title: 'Long-term gains on shares: ₹' + F(L.g),
+      sub: 'Listed shares and equity funds with STT paid, held over 12 months. One consolidated row covers every post-January-2018 buy from all your accounts.',
+      formTitle: 'Schedule 112A',
+      fields: [
+        ['1a', 'Share/Unit acquired (on or before / after 31st Jan 2018)', 'FILL', 'After 31st Jan 2018', 'Earlier buys need their own scrip-wise rows'],
+        ['1b', 'Share/Unit transferred (before / on or after 23rd July 2024)', 'CHECK', 'On or after 23 July 2024', 'On the notified form; dropped in the later schema. Pick this only if the portal asks'],
+        ['2', 'ISIN Code', 'FILL', 'INNOTREQUIRD', 'Code for one consolidated row of post-January-2018 buys'],
+        ['3', 'Name of the Share/Unit', 'FILL', 'CONSOLIDATED', 'Name for the consolidated row'],
+        ['4', 'No. of Shares/Units', 'SKIP', '', 'Left blank for a consolidated row'],
+        ['5', 'Sale price per Share/Unit', 'SKIP', '', 'Left blank for a consolidated row'],
+        ['6', 'Full Value of Consideration', 'FILL', F(L.p), 'Total sale value of all long-term equity lots, every account combined'],
+        ['7', 'Cost of acquisition without indexation', 'AUTO', F(L.c), 'Higher of 8 and 9; equals 8 for post-January-2018 buys'],
+        ['8', 'Cost of acquisition', 'FILL', F(L.c), 'Total purchase cost'],
+        ['9', 'If acquired before 01.02.2018, lower of 11 and 6', 'SKIP', '', 'Only for pre-February-2018 buys'],
+        ['10', 'Fair Market Value per share/unit as on 31st January 2018', 'SKIP', '', 'Left blank for a consolidated row'],
+        ['11', 'Total Fair Market Value of capital asset as per section 55(2)(ac)', 'SKIP', '', 'Only for pre-February-2018 buys'],
+        ['12', 'Expenditure wholly and exclusively in connection with transfer', 'FILL', F(L.e), 'Verified brokerage and charges. STT is not deductible'],
+        ['13', 'Total deductions (7 + 12)', 'AUTO', F(L.c + L.e), 'The portal adds this up; check it matches'],
+        ['14', 'Balance (6 - 13)', 'AUTO', F(L.g), 'Flows into Schedule CG B(I) item 3'],
+        ['B3a', 'LTCG u/s 112A (column 14 of Schedule 112A)', 'AUTO', F(L.g), 'Copied in from Schedule 112A'],
+        ['B3b', 'Deduction under section 54F', 'SKIP', '', 'Only if you reinvested in a house'],
+        ['B3c', 'Long-term capital gains on sale of capital assets at B3 above (3a - 3b)', 'AUTO', F(L.g), 'The ₹1.25 lakh exemption is applied in the tax computation, not here']
+      ],
+      pages: [
+        { left: HEAD, right: 'Schedule 112A / page 1', items: [
+          { t: 'title', text: 'Schedule 112A' },
+          { t: 'note', text: 'From sale of equity share in a company or unit of equity oriented fund or unit of a business trust on which STT is paid. One row per entry, columns shown top to bottom.' },
+          { t: 'h', text: 'Row 1' },
+          row('1a', 'Share/Unit acquired (on or before / after 31st Jan 2018)', 0),
+          row('1b', 'Share/Unit transferred (before / on or after 23rd July 2024)', 1),
+          row('2', 'ISIN Code', 2), row('3', 'Name of the Share/Unit', 3), row('4', 'No. of Shares/Units', 4),
+          row('5', 'Sale price per Share/Unit', 5), row('6', 'Full Value of Consideration', 6),
+          row('7', 'Cost of acquisition without indexation (higher of 8 and 9)', 7)
+        ] },
+        { left: HEAD, right: 'Schedule 112A / page 2', items: [
+          { t: 'h', text: 'Row 1 (continued)' },
+          row('8', 'Cost of acquisition', 8),
+          row('9', 'If the long-term capital asset was acquired before 01.02.2018, lower of 11 and 6', 9),
+          row('10', 'Fair Market Value per share/unit as on 31st January 2018', 10),
+          row('11', 'Total Fair Market Value of capital asset as per section 55(2)(ac)', 11),
+          row('12', 'Expenditure wholly and exclusively in connection with transfer', 12),
+          row('13', 'Total deductions (7 + 12)', 13), row('14', 'Balance (6 - 13)', 14)
+        ] },
+        { left: HEAD, right: 'Schedule Capital Gains / B(I)', items: [
+          bHead,
+          row('1, 2', 'Land or building; listed securities other than units u/s 112(1)', -1, '', true, true),
+          row('3', 'From sale of equity share in a company or unit of equity oriented fund or unit of a business trust on which STT is paid under section 112A', -1, '', false, true),
+          row('a', 'LTCG u/s 112A (column 14 of Schedule 112A)', 15, 'ind1'),
+          row('b', 'Deduction under section 54F', 16, 'ind1'),
+          row('c', 'Long-term capital gains on sale of capital assets at B3 above (3a - 3b)', 17, 'ind1'),
+          row('4 - 12', 'Non-resident items, other assets, deemed LTCG, pass-through, DTAA, Total LTCG (B12)', -1, '', true, true)
+        ] }
+      ],
+      footer: 'Bought before 1 Feb 2018? Each such holding needs its own row. The app blocks those lots for review.'
+    },
+    setoff: {
+      kicker: 'SCHEDULE CG / E', title: 'Set-off of losses (table E)',
+      sub: 'Losses left after each item nets off are set against gains here. The portal fills most of this from A and B; you mainly check it.',
+      formTitle: 'Schedule CG, item E',
+      fields: [
+        ['i', 'Capital loss to be set off', lossTotal ? 'CHECK' : 'AUTO', F(lossTotal), lossTotal ? 'A net loss in one item; the portal sets it off against gains below' : 'No net loss in any item, so nothing to set off'],
+        ['ii', 'Gains taxable at 20% (STCG on shares, A2e)', 'AUTO', gainCol(S.g), 'Column 2: capital gain of current year'],
+        ['iii', 'Gains taxable at 30%', 'SKIP', '', 'Not used for listed shares, funds or ETFs'],
+        ['iv', 'Gains taxable at applicable rate (A5e)', 'AUTO', gainCol(O.g), 'Column 2: your slab-rate short-term gain'],
+        ['v', 'Gains taxable at DTAA rates', 'SKIP', '', 'Not used for residents'],
+        ['vi', 'Gains taxable at 12.50% (LTCG on shares, B3c)', 'AUTO', gainCol(L.g), 'Column 2: long-term gain on shares'],
+        ['vii', 'Gains at DTAA rates', 'SKIP', '', 'Not used for residents'],
+        ['viii', 'Total loss set off (ii + iii + iv + v + vi + vii)', 'AUTO', F(lossTotal), 'Calculated by the portal'],
+        ['ix', 'Loss remaining after set off (i - viii)', 'AUTO', '0.00', 'Carried forward only if positive']
+      ],
+      pages: [
+        { left: HEAD, right: 'Schedule Capital Gains / E', items: [
+          { t: 'title', text: 'E. Set-off of current year capital losses with current year capital gains' },
+          { t: 'note', text: 'Columns: 1 Type of capital gain, 2 Capital gain of current year, 3 to 6 Short-term capital loss at 20% / 30% / applicable rate / DTAA rates, 7 Long-term capital loss at 12.50% and DTAA rates, 8 Current year capital gains remaining after set off.' },
+          row('i', 'Capital loss to be set off', 0),
+          row('ii', '20%', 1), row('iii', '30%', 2), row('iv', 'Applicable rate', 3), row('v', 'DTAA rates', 4),
+          row('vi', '12.50%', 5), row('vii', 'DTAA rates', 6),
+          row('viii', 'Total loss set off (ii + iii + iv + v + vi + vii)', 7),
+          row('ix', 'Loss remaining after set off (i - viii)', 8)
+        ] }
+      ],
+      footer: 'Short-term losses can be set against short- or long-term gains; long-term losses only against long-term gains. The portal applies this.'
+    },
+    tablef: {
+      kicker: 'SCHEDULE CG / F', title: 'Quarter breakup (table F)',
+      sub: 'Which quarter each gain arose in, by sale date. Shares short-term go in row 1 (20%), other short-term in row 3 (applicable rates), shares long-term in row 5 (12.5%).',
+      formTitle: 'Schedule CG, item F',
+      fields: tf,
+      pages: [
+        { left: HEAD, right: 'Schedule Capital Gains / F', items: [
+          { t: 'title', text: 'F. Information about accrual/receipt of capital gain' },
+          { t: 'grid' },
+          { t: 'note', text: 'Raw gains by sale date from your lots. If you have losses to set off, adjust first; the app does not compute final Table F figures.' }
+        ] }
+      ],
+      footer: 'Raw gains by sale date. If you have losses to set off, adjust first; the app does not compute final Table F figures.'
+    }
+  };
+}
+var ITR_GRID = [
+  { label: '1  Short-term capital gains taxable at the rate of 20%', fs: [0, 1, 2, 3, 4] },
+  { label: '2  Short-term capital gains taxable at the rate of 30%', fs: [5, 5, 5, 5, 5] },
+  { label: '3  Short-term capital gains taxable at applicable rates', fs: [6, 7, 8, 9, 10] },
+  { label: '4  Short-term capital gains taxable at DTAA rates', fs: [11, 11, 11, 11, 11] },
+  { label: '5  Long-term capital gains taxable at the rate of 12.5%', fs: [12, 13, 14, 15, 16] },
+  { label: '6  Long-term capital gains taxable at DTAA rates', fs: [17, 17, 17, 17, 17] },
+  { label: '7  Capital gains on transfer of Virtual Digital Asset taxable at 30%', fs: [18, 18, 18, 18, 18] }
+];
+function itrSync(fi, k) {
+  setTimeout(function () {
+    try {
+      var box = document.querySelector('.dlg .paperbox');
+      var el = box && box.querySelector('[data-f="' + fi + '"]');
+      if (box && el) {
+        var br = box.getBoundingClientRect(), er = el.getBoundingClientRect();
+        box.scrollTo({ top: Math.max(0, er.top - br.top + box.scrollTop - box.clientHeight * 0.32), left: Math.max(0, er.left - br.left + box.scrollLeft - 60), behavior: 'smooth' });
+      }
+      var lb = document.querySelector('.dlg .listbox'), li = document.getElementById('gl-' + k);
+      if (lb && li) {
+        var lr = lb.getBoundingClientRect(), ir = li.getBoundingClientRect();
+        lb.scrollTo({ top: Math.max(0, ir.top - lr.top + lb.scrollTop - lb.clientHeight * 0.32), behavior: 'smooth' });
+      }
+    } catch (e) {}
+  }, 70);
+}
+function itrSize(n) { return n < 1024 * 1024 ? Math.max(1, Math.round(n / 1024)) + ' KB' : (Math.round(n / 104857.6) / 10) + ' MB'; }
+function itrGuess(name) {
+  var n = name.toLowerCase();
+  if (/zerodha|kite|console/.test(n)) return 'zerodha';
+  if (/groww/.test(n)) return 'groww';
+  if (/\.csv$/.test(n)) return 'other';
+  return 'groww';
+}
+var ITR_TOTALS = itrTotals(ITR_DEMO_LOTS);
+var ITR_FORMS = itrForms(ITR_TOTALS);
+var ITR_INFO = {
+  excel: { kicker: 'YOUR RECORD', title: 'Excel working paper', sub: 'Kept separate from the forms. Use it to check any number, or hand it to Claude with a question.' },
+  accounts: { kicker: 'BY ACCOUNT', title: 'Your accounts', sub: 'Totals for each broker account. The ITR has no per-account rows, so only the combined row goes in.' },
+  lots: { kicker: 'EVERY SALE', title: 'Your lots', sub: 'Every sale included in the totals, from all accounts.' }
+};
+
+class Component extends DCLogic {
+  constructor() {
+    super(...arguments);
+    this.state = {
+      theme: 'aurora', view: 'home', angle: 0, dragging: false, hover: false, paused: false, tiltX: -8, tiltY: 0,
+      buy: '2024-06-14', sell: '2025-06-14', kind: 'listed_equity', flip: false,
+      step: 0, flow: false, fy: '2025-26', files: [], hot: false, dl: false,
+      dlg: null, dStep: 0, dPlay: true, onlyFill: false, mode: 'form', shots: {}
+    };
+    this.drag = null; this.moved = false; this.fid = 0;
+  }
+  componentDidMount() {
+    var self = this;
+    try {
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { this.reduced = true; this.setState({ paused: true, dPlay: false }); }
+    } catch (e) {}
+    this.timer = setInterval(function () {
+      var s = self.state;
+      if (!s.dlg && !s.paused && !s.dragging && !s.hover) { var st = self.step(); self.setState({ angle: Math.round(s.angle / st) * st - st }); }
+    }, 3600);
+    this.dTimer = setInterval(function () {
+      var s = self.state;
+      if (!s.dlg || !ITR_FORMS[s.dlg] || !s.dPlay) return;
+      var n = self.visible().length;
+      if (s.dStep < n - 1) { self.setState({ dStep: s.dStep + 1 }); self.sync(s.dStep + 1); }
+      else self.setState({ dPlay: false });
+    }, 2100);
+  }
+  componentWillUnmount() { clearInterval(this.timer); clearInterval(this.dTimer); }
+  focusLater(sel) { setTimeout(function () { try { var el = document.querySelector(sel); if (el) el.focus({ preventScroll: true }); } catch (e) {} }, 80); }
+  n() { return this.state.view === 'forms' ? 8 : 6; }
+  step() { return 360 / this.n(); }
+  idx() { var n = this.n(); return ((Math.round(-this.state.angle / this.step()) % n) + n) % n; }
+  go(i) { var n = this.n(), st = this.step(), cur = this.idx(); var d = i - cur; if (d > n / 2) d -= n; if (d < -n / 2) d += n; this.setState({ angle: Math.round(this.state.angle / st) * st - d * st }); }
+  visible() {
+    var F = ITR_FORMS[this.state.dlg] || ITR_FORMS.stcg, only = this.state.onlyFill;
+    var v = F.fields.map(function (x, i) { return { x: x, i: i }; }).filter(function (o) { return !only || o.x[2] === 'FILL' || o.x[2] === 'CHECK'; });
+    return v.length ? v : F.fields.map(function (x, i) { return { x: x, i: i }; });
+  }
+  sync(k) { var v = this.visible(); var kk = Math.max(0, Math.min(k, v.length - 1)); if (v[kk]) itrSync(v[kk].i, kk); }
+  openDlg(kind) { this.setState({ dlg: kind, dStep: 0, dPlay: !this.reduced, mode: 'form', dl: false }); this.focusLater('#dlg-close'); var self = this; setTimeout(function () { self.sync(0); }, 120); }
+  closeDlg() { this.setState({ dlg: null }); this.focusLater('.stage'); }
+  card(i) {
+    if (this.moved) { this.moved = false; return; }
+    if (this.idx() !== i) { this.go(i); return; }
+    if (this.state.view === 'forms') this.openDlg(ITR_DLG_ORDER[i]);
+  }
+  setView(v) { this.setState({ view: v, angle: 0, dlg: null }); try { window.scrollTo(0, 0); } catch (e) {} }
+  setInputs(patch) { patch.flip = !this.state.flip; this.setState(patch); }
+  addFiles(list) {
+    var files = this.state.files.slice();
+    var okCount = files.filter(function (f) { return f.ok; }).length;
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i], name = String(f.name || 'file'), ext = (name.split('.').pop() || '').toLowerCase();
+      var why = '';
+      if (ext === 'pdf') why = 'PDF reports are not accepted. Download the .xlsx version.';
+      else if (ext === 'xls') why = 'Old .xls is not accepted. Save it as .xlsx first.';
+      else if (ext !== 'xlsx' && ext !== 'csv') why = 'Only .xlsx or .csv files.';
+      else if (f.size > ITR_MAXSIZE) why = 'Over the 2 MB limit.';
+      else if (/p&l|pnl|p_l|profit/.test(name.toLowerCase()) && !/tax/.test(name.toLowerCase())) why = 'Looks like a P&L statement. Use the capital-gains report instead.';
+      else if (files.some(function (x) { return x.ok && x.name === name; })) why = 'Already added.';
+      else if (okCount >= ITR_MAX) why = 'The limit is 10 files.';
+      var broker = itrGuess(name);
+      if (!why) okCount++;
+      this.fid++;
+      files.push({ id: this.fid, name: name, size: f.size || 0, ok: !why, why: why, broker: broker, nick: ITR_BROKERS[broker] });
+    }
+    this.setState({ files: files, hot: false, dl: false });
+  }
+  updateFile(id, patch) {
+    this.setState({ files: this.state.files.map(function (f) { return f.id === id ? Object.assign({}, f, patch) : f; }) });
+  }
+  renderVals() {
+    var self = this, s = this.state, idx = this.idx(), N = this.n(), T = ITR_TOTALS;
+    var r = itrClassify(s.buy, s.sell, s.kind);
+    var okFiles = s.files.filter(function (f) { return f.ok; });
+    var accounts = Object.keys(okFiles.reduce(function (a, f) { a[(f.nick || '').trim().toLowerCase() || f.broker] = 1; return a; }, {})).length;
+    var isForm = !!ITR_FORMS[s.dlg];
+    var D = ITR_FORMS[s.dlg] || ITR_INFO[s.dlg] || ITR_FORMS.stcg;
+    var FD = ITR_FORMS[s.dlg] || ITR_FORMS.stcg;
+    var vis = this.visible();
+    var ds = Math.min(s.dStep, vis.length - 1);
+    var active = vis[ds].i;
+    var shot = s.shots[s.dlg];
+    var cards = s.view === 'forms' ? ITR_FORM_CARDS : ITR_HOME_CARDS;
+    var fyLabel = s.fy === '2025-26' ? 'FY 2025-26' : 'FY 2024-25';
+    var nextKind = ITR_DLG_ORDER[(ITR_DLG_ORDER.indexOf(s.dlg) + 1) % ITR_DLG_ORDER.length];
+    var out = {
+      themeCls: 't-' + s.theme,
+      themes: ITR_THEMES.map(function (t) { var on = t.id === s.theme; return { label: t.label, c1: t.c1, c2: t.c2, cls: on ? 'on' : '', pick: function () { self.setState({ theme: t.id }); }, pressed: on ? 'true' : 'false' }; }),
+      isHome: s.view === 'home', isForms: s.view === 'forms',
+      goHome: function () { if (self.state.view !== 'home') self.setView('home'); else { try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {} } },
+      goHomeView: function () { self.setView('home'); },
+      stageCls: s.dragging ? 'dragging' : '',
+      tiltX: s.tiltX, tiltY: s.tiltY, angle: s.angle, negAngle: -s.angle,
+      ringTr: s.dragging ? 'none' : 'transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1)',
+      cardKicker: cards[idx].k, cardDesc: cards[idx].d,
+      paused: s.paused, playing: !s.paused,
+      pauseLabel: s.paused ? 'Resume rotation' : 'Pause rotation',
+      dots: cards.map(function (c, i) { return { label: 'Show card ' + (i + 1) + ': ' + c.k, cls: i === idx ? 'on' : '', pressed: i === idx ? 'true' : 'false', pick: function () { self.go(i); } }; }),
+      prev: function () { self.go((idx + N - 1) % N); },
+      next: function () { self.go((idx + 1) % N); },
+      togglePause: function () { self.setState({ paused: !s.paused }); },
+      down: function (e) { self.drag = { x: e.clientX, a: self.state.angle, captured: false, id: e.pointerId }; self.moved = false; },
+      move: function (e) {
+        var rc = e.currentTarget.getBoundingClientRect();
+        var nx = (e.clientX - rc.left) / rc.width - 0.5, ny = (e.clientY - rc.top) / rc.height - 0.5;
+        var patch = { tiltY: Math.round(nx * 160) / 10, tiltX: Math.round((-8 - ny * 12) * 10) / 10 };
+        if (self.drag) {
+          var dx = e.clientX - self.drag.x;
+          if (!self.drag.captured && Math.abs(dx) > 6) {
+            self.drag.captured = true; self.moved = true; patch.dragging = true;
+            try { e.currentTarget.setPointerCapture(self.drag.id); } catch (err) {}
+          }
+          if (self.drag.captured) patch.angle = self.drag.a + dx * 0.35;
+        }
+        self.setState(patch);
+      },
+      up: function () {
+        if (!self.drag) return;
+        var was = self.drag.captured;
+        self.drag = null;
+        if (was) { var st = self.step(); self.setState({ dragging: false, angle: Math.round(self.state.angle / st) * st }); }
+      },
+      enter: function () { self.setState({ hover: true }); },
+      leave: function () { if (!self.drag) self.setState({ hover: false, tiltX: -8, tiltY: 0 }); },
+      key: function (e) {
+        if (e.key === 'ArrowRight') { e.preventDefault(); self.go((idx + 1) % N); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); self.go((idx + N - 1) % N); }
+        else if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget && self.state.view === 'forms') { e.preventDefault(); self.moved = false; self.card(idx); }
+      },
+      c0: function () { self.card(0); }, c1: function () { self.card(1); }, c2: function () { self.card(2); },
+      c3: function () { self.card(3); }, c4: function () { self.card(4); }, c5: function () { self.card(5); },
+      c6: function () { self.card(6); }, c7: function () { self.card(7); },
+      tot: { stcg: itrFmt(T.S.g), ltcg: itrFmt(T.L.g), other: itrFmt(T.O.g), lotCount: String(T.S.n + T.L.n + T.O.n) },
+      fy: s.fy, setFy: function (e) { self.setState({ fy: e.target.value }); },
+      fyLabel: fyLabel, fyAy: s.fy === '2025-26' ? 'AY 2026-27' : 'AY 2025-26',
+      dropCls: s.hot ? 'hot' : '',
+      pick: function (e) { var fl = e.target.files; if (fl && fl.length) self.addFiles(Array.prototype.slice.call(fl)); try { e.target.value = ''; } catch (err) {} },
+      dragOver: function (e) { e.preventDefault(); if (!self.state.hot) self.setState({ hot: true }); },
+      dragLeave: function () { self.setState({ hot: false }); },
+      drop: function (e) { e.preventDefault(); var fl = e.dataTransfer && e.dataTransfer.files; if (fl && fl.length) self.addFiles(Array.prototype.slice.call(fl)); else self.setState({ hot: false }); },
+      addDemo: function () { self.addFiles(ITR_DEMO_FILES.filter(function (d) { return !self.state.files.some(function (f) { return f.name === d.name; }); })); },
+      hasFiles: s.files.length > 0,
+      fileRows: s.files.map(function (f) {
+        var note = f.ok ? itrSize(f.size) + ' / ready' : f.why;
+        var noteCls = f.ok ? 'st-mut' : 'st-bad';
+        if (f.ok && f.broker === 'zerodha') { note = itrSize(f.size) + ' / needs a Zerodha reader in the app'; noteCls = 'st-warn'; }
+        if (f.ok && f.broker === 'other') { note = itrSize(f.size) + ' / must follow the app CSV template'; }
+        return {
+          name: f.name, ok: f.ok, note: note, noteCls: noteCls, rowCls: f.ok ? '' : 'bad',
+          broker: f.broker, nick: f.nick,
+          brokerLabel: 'Broker for ' + f.name, nickLabel: 'Account name for ' + f.name, removeLabel: 'Remove ' + f.name,
+          setBroker: function (e) { var b = e.target.value; self.updateFile(f.id, { broker: b, nick: f.nick === ITR_BROKERS[f.broker] ? ITR_BROKERS[b] : f.nick }); },
+          setNick: function (e) { self.updateFile(f.id, { nick: e.target.value }); },
+          remove: function () { self.setState({ files: self.state.files.filter(function (x) { return x.id !== f.id; }) }); }
+        };
+      }),
+      uploadSummary: okFiles.length === 0 ? 'No files yet. Add your reports, or try the demo files.' :
+        okFiles.length + (okFiles.length === 1 ? ' file' : ' files') + ' from ' + accounts + (accounts === 1 ? ' account, ' : ' accounts, ') + fyLabel,
+      reviewDisabled: okFiles.length === 0,
+      reviewLabel: okFiles.length ? 'Review ' + okFiles.length + (okFiles.length === 1 ? ' file' : ' files') : 'Review',
+      review: function () { if (okFiles.length) self.setView('forms'); },
+      okFiles: okFiles.map(function (f) { return { label: f.name + ' / ' + (f.nick || ITR_BROKERS[f.broker]) }; }),
+      excelFrom: okFiles.length + (okFiles.length === 1 ? ' file from ' : ' files from ') + accounts + (accounts === 1 ? ' account' : ' accounts') + ', ' + fyLabel,
+      download: function () { self.setState({ dl: true }); },
+      dlMsg: s.dl ? 'Prototype: no file here. The real app builds this workbook from your reports.' : '',
+      dlgOpen: !!s.dlg,
+      isFormDlg: isForm, isExcelDlg: s.dlg === 'excel', isAcctDlg: s.dlg === 'accounts', isLotsDlg: s.dlg === 'lots',
+      D: D,
+      closeDlg: function () { self.closeDlg(); },
+      stop: function (e) { e.stopPropagation(); },
+      dlgKey: function (e) { if (e.key === 'Escape') { e.preventDefault(); self.closeDlg(); } },
+      nextDlg: function () { self.openDlg(nextKind); },
+      nextDlgLabel: 'Next: ' + ITR_DLG_NAMES[nextKind],
+      modeForm: s.mode === 'form', modeShot: s.mode === 'shot',
+      segForm: s.mode === 'form' ? 'on' : '', segShot: s.mode === 'shot' ? 'on' : '',
+      segFormP: s.mode === 'form' ? 'true' : 'false', segShotP: s.mode === 'shot' ? 'true' : 'false',
+      showForm: function () { self.setState({ mode: 'form' }); setTimeout(function () { self.sync(ds); }, 60); },
+      showShot: function () { self.setState({ mode: 'shot' }); },
+      segAll: s.onlyFill ? '' : 'on', segFill: s.onlyFill ? 'on' : '',
+      segAllP: s.onlyFill ? 'false' : 'true', segFillP: s.onlyFill ? 'true' : 'false',
+      showAll: function () { self.setState({ onlyFill: false, dStep: 0, dPlay: !self.reduced }); setTimeout(function () { self.sync(0); }, 30); },
+      showFill: function () { self.setState({ onlyFill: true, dStep: 0, dPlay: !self.reduced }); setTimeout(function () { self.sync(0); }, 30); },
+      hasShot: !!(shot && shot.length), noShot: !(shot && shot.length),
+      shotList: (shot || []).map(function (u, i) { return { url: u, alt: 'Your portal screenshot ' + (i + 1) + ' of ' + FD.formTitle }; }),
+      userScroll: function () { if (self.state.dPlay) self.setState({ dPlay: false }); },
+      pickShot: function (e) {
+        var fl = e.target.files; if (!fl || !fl.length) return;
+        var urls = []; try { for (var i = 0; i < fl.length; i++) urls.push(URL.createObjectURL(fl[i])); } catch (err) {}
+        if (urls.length) { var sh = Object.assign({}, self.state.shots); sh[s.dlg] = (sh[s.dlg] || []).concat(urls); self.setState({ shots: sh }); }
+      },
+      clearShot: function () { var sh = Object.assign({}, self.state.shots); delete sh[s.dlg]; self.setState({ shots: sh }); },
+      pages: FD.pages.map(function (pg) {
+        return { left: pg.left, right: pg.right, items: pg.items.map(function (it) {
+          var on = it.t === 'row' && it.f === active;
+          return {
+            isTitle: it.t === 'title', isH: it.t === 'h', isNote: it.t === 'note', isRow: it.t === 'row', isGrid: it.t === 'grid',
+            text: it.text || '', num: it.num || '', f: String(it.f === undefined ? -1 : it.f), ind: it.ind || '',
+            cls: (it.dim ? 'dim ' : '') + (on ? 'hl' : ''), boxCls: it.nobox ? 'nobox' : (it.t === 'row' && FD.fields[it.f] && FD.fields[it.f][2] === 'SKIP' ? 'skipbox' : '')
+          };
+        }) };
+      }),
+      gridRows: ITR_GRID.map(function (g) {
+        return { label: g.label, cls: g.fs.indexOf(active) >= 0 && s.dlg === 'tablef' ? 'rowon' : '', cells: g.fs.map(function (f) { var fld = ITR_FORMS.tablef.fields[f]; return { f: String(f), cls: (f === active && s.dlg === 'tablef' ? 'hl ' : '') + (fld && fld[2] === 'SKIP' ? 'skipbox' : '') }; }) };
+      }),
+      formAria: 'Recreated ' + FD.formTitle + ' form, current field ' + vis[ds].x[0] + ': ' + vis[ds].x[1],
+      guideRows: vis.map(function (o, k) {
+        var a = o.x[2];
+        return {
+          letter: o.x[0], label: o.x[1], act: a, note: o.x[4], id: 'gl-' + k,
+          tagText: a === 'FILL' ? 'FILL' : a === 'SKIP' ? 'SKIP' : a === 'AUTO' ? 'AUTO' : 'CHECK',
+          mine: a === 'SKIP' ? '—' : (o.x[3] || '—'),
+          valCls: a === 'FILL' ? 'st-ok' : a === 'CHECK' ? 'st-warn' : 'st-mut',
+          cls: (k === ds ? 'on' : '') + (a === 'SKIP' ? ' dim' : ''),
+          current: k === ds ? 'step' : 'false',
+          pick: function () { self.setState({ dStep: k, dPlay: false }); self.sync(k); }
+        };
+      }),
+      dCount: 'Field ' + (ds + 1) + ' of ' + vis.length,
+      dProg: Math.round((ds + 1) / vis.length * 100),
+      dPaused: !s.dPlay, dPlaying: s.dPlay,
+      dPlayLabel: s.dPlay ? 'Pause walkthrough' : 'Play walkthrough',
+      dToggle: function () { if (!s.dPlay && ds >= vis.length - 1) { self.setState({ dStep: 0, dPlay: true }); self.sync(0); } else self.setState({ dPlay: !s.dPlay }); },
+      dPrev: function () { var k = Math.max(0, ds - 1); self.setState({ dStep: k, dPlay: false }); self.sync(k); },
+      dNext: function () { var k = Math.min(vis.length - 1, ds + 1); self.setState({ dStep: k, dPlay: false }); self.sync(k); },
+      acctRows: T.order.map(function (n) { var a = T.acct[n]; return { name: n, stcg: itrFmt(a.S), ltcg: itrFmt(a.L), other: itrFmt(a.O), lots: String(a.n), sCls: a.S < 0 ? 'st-bad' : '', lCls: a.L < 0 ? 'st-bad' : '', oCls: a.O < 0 ? 'st-bad' : '' }; }),
+      lotRows: ITR_DEMO_LOTS.map(function (l) { var g = l.p - l.c - l.e; return { asset: l.asset, acct: l.acct, sold: l.sold, term: l.kind === 'other' ? 'OTHER' : l.term, termCls: l.kind === 'other' ? 'st-warn' : 'term-' + l.term, p: itrFmt(l.p), c: itrFmt(l.c), g: itrFmt(g), gCls: g < 0 ? 'st-bad' : '' }; }),
+      buy: s.buy, sell: s.sell, kind: s.kind,
+      setBuy: function (e) { self.setInputs({ buy: e.target.value }); },
+      setSell: function (e) { self.setInputs({ sell: e.target.value }); },
+      setKind: function (e) { self.setInputs({ kind: e.target.value }); },
+      presets: ITR_PRESETS.map(function (p) { var on = p.buy === s.buy && p.sell === s.sell && p.kind === s.kind; return { label: p.label, cls: on ? 'on' : '', pressed: on ? 'true' : 'false', pick: function () { self.setInputs({ buy: p.buy, sell: p.sell, kind: p.kind }); } }; }),
+      r: r, flipCls: s.flip ? 'fa' : 'fb',
+      steps: ITR_STEPS.map(function (t, i) { var on = i === s.step; return { tab: t, cls: on ? 'on' : '', pressed: on ? 'true' : 'false', pick: function () { self.setState({ step: i }); } }; }),
+      nextStep: function () { self.setState({ step: (s.step + 1) % 3 }); },
+      nextStepLabel: s.step === 2 ? 'Back to step 1' : 'Next step',
+      toggleFlow: function () { self.setState({ flow: !s.flow }); },
+      showFlow: s.flow, flowOn: s.flow ? 'true' : 'false', flowCls: s.flow ? 'on' : '',
+      flowMsg: s.flow ? 'Your files stay on this device, start to finish.' : 'Flip it to trace the path your files take.'
+    };
+    for (var i = 0; i < 8; i++) out['on' + i] = i === idx ? 'on' : '';
+    for (var j = 0; j < 3; j++) {
+      var d = j - s.step;
+      if (d === 0) { out['t' + j] = 'translateY(0px) translateZ(0px) rotateX(0deg)'; out['o' + j] = '1'; out['z' + j] = '3'; out['p' + j] = 'auto'; out['h' + j] = 'false'; }
+      else if (d > 0) { out['t' + j] = 'translateY(' + (d * 24) + 'px) translateZ(' + (-d * 110) + 'px) rotateX(-8deg)'; out['o' + j] = String(1 - d * 0.35); out['z' + j] = String(3 - d); out['p' + j] = 'none'; out['h' + j] = 'true'; }
+      else { out['t' + j] = 'translateY(-60px) translateZ(80px) rotateX(70deg)'; out['o' + j] = '0'; out['z' + j] = '4'; out['p' + j] = 'none'; out['h' + j] = 'true'; }
+    }
+    return out;
+  }
+}
+</script>
+
+</body>
+</html>

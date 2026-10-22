@@ -1,0 +1,157 @@
+<sc-if value="{{dlgOpen}}" hint-placeholder-val="{{ false }}">
+<div class="ovl" onClick="{{closeDlg}}" onKeyDown="{{dlgKey}}">
+<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title" onClick="{{stop}}">
+<div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-start">
+<div style="min-width:0;flex:1 1 420px">
+<p class="mono" style="margin:0;font-size:12px;letter-spacing:.16em;color:var(--a2)">ITR-2 / {{fyAy}} / {{D.kicker}}</p>
+<h2 id="dlg-title" class="disp" style="margin:8px 0 6px;font-size:clamp(24px,3vw,36px);line-height:1.15;letter-spacing:-.02em;font-weight:700">{{D.title}}</h2>
+<p style="margin:0;font-size:15px;color:var(--mut)">{{D.sub}}</p>
+</div>
+<button id="dlg-close" class="icon-btn" type="button" aria-label="Close and go back to the ring" onClick="{{closeDlg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+
+<sc-if value="{{isFormDlg}}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:22px 0 16px">
+<div class="seg" role="group" aria-label="Left side">
+<button type="button" class="{{segForm}}" aria-pressed="{{segFormP}}" onClick="{{showForm}}">Form</button>
+<button type="button" class="{{segShot}}" aria-pressed="{{segShotP}}" onClick="{{showShot}}">My portal screenshots</button>
+</div>
+<div class="seg" role="group" aria-label="Which fields">
+<button type="button" class="{{segAll}}" aria-pressed="{{segAllP}}" onClick="{{showAll}}">All fields</button>
+<button type="button" class="{{segFill}}" aria-pressed="{{segFillP}}" onClick="{{showFill}}">Only what I fill</button>
+</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+<div style="flex:1 1 500px;min-width:0">
+<sc-if value="{{modeForm}}" hint-placeholder-val="{{ true }}">
+<div class="paperbox" tabindex="0" role="region" aria-label="{{formAria}}" onWheel="{{userScroll}}" onTouchStart="{{userScroll}}">
+<sc-for list="{{pages}}" as="pg" hint-placeholder-count="2">
+<div class="page">
+<div class="pghead"><span>{{pg.left}}</span><span>{{pg.right}}</span></div>
+<sc-for list="{{pg.items}}" as="it" hint-placeholder-count="6">
+<sc-if value="{{it.isTitle}}" hint-placeholder-val="{{ false }}"><div class="ptitle">{{it.text}}</div></sc-if>
+<sc-if value="{{it.isH}}" hint-placeholder-val="{{ false }}"><div class="ph">{{it.text}}</div></sc-if>
+<sc-if value="{{it.isNote}}" hint-placeholder-val="{{ false }}"><div class="pnote">{{it.text}}</div></sc-if>
+<sc-if value="{{it.isRow}}" hint-placeholder-val="{{ true }}"><div class="prow {{it.cls}}" data-f="{{it.f}}"><span class="pnum">{{it.num}}</span><span class="plabel {{it.ind}}">{{it.text}}</span><span class="pbox {{it.boxCls}}"></span></div></sc-if>
+<sc-if value="{{it.isGrid}}" hint-placeholder-val="{{ false }}">
+<table class="ftable">
+<thead><tr><th>Type of capital gain / Date</th><th>Upto 15/6 (i)</th><th>16/6 to 15/9 (ii)</th><th>16/9 to 15/12 (iii)</th><th>16/12 to 15/3 (iv)</th><th>16/3 to 31/3 (v)</th></tr></thead>
+<tbody>
+<sc-for list="{{gridRows}}" as="gr" hint-placeholder-count="7">
+<tr class="{{gr.cls}}"><td>{{gr.label}}</td>
+<sc-for list="{{gr.cells}}" as="ce" hint-placeholder-count="5"><td class="{{ce.cls}}" data-f="{{ce.f}}"></td></sc-for>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</sc-if>
+</sc-for>
+</div>
+</sc-for>
+</div>
+<p style="margin:12px 0 0;font-size:13px;color:var(--mut)">Recreated from the notified ITR-2 form for AY 2026-27, laid out page by page. It scrolls with the list; scroll it yourself to pause.</p>
+</sc-if>
+<sc-if value="{{modeShot}}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{hasShot}}" hint-placeholder-val="{{ false }}">
+<div class="paperbox" tabindex="0" role="region" aria-label="Your portal screenshots">
+<sc-for list="{{shotList}}" as="sh" hint-placeholder-count="1">
+<img class="shot" src="{{sh.url}}" alt="{{sh.alt}}" style="margin-bottom:14px">
+</sc-for>
+</div>
+<button class="btn btn-ghost" type="button" onClick="{{clearShot}}" style="margin-top:12px">Remove screenshots</button>
+</sc-if>
+<sc-if value="{{noShot}}" hint-placeholder-val="{{ true }}">
+<label for="shotfile" class="drop" style="padding:56px 20px">
+<input id="shotfile" class="vh" type="file" accept="image/*" multiple onChange="{{pickShot}}">
+<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a2)"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="M21 16l-5-5-8 8"></path></svg>
+<span class="disp" style="font-size:17px;font-weight:700">Add screenshots of this portal page</span>
+<span style="font-size:14px;color:var(--mut);max-width:420px">Add one or more, in order. They stack in a scrollable box next to your values and stay in this tab.</span>
+</label>
+</sc-if>
+</sc-if>
+</div>
+
+<div style="flex:1 1 400px;min-width:0">
+<div class="mono" style="font-size:12px;letter-spacing:.14em;color:var(--a2);margin-bottom:10px">YOUR VALUES / FROM YOUR REPORTS</div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+<button class="icon-btn" type="button" aria-label="Previous field" onClick="{{dPrev}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+<button class="icon-btn" type="button" aria-label="{{dPlayLabel}}" onClick="{{dToggle}}">
+<sc-if value="{{dPaused}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg></sc-if>
+<sc-if value="{{dPlaying}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"></path></svg></sc-if>
+</button>
+<button class="icon-btn" type="button" aria-label="Next field" onClick="{{dNext}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+<span class="mono" style="font-size:13px;color:var(--mut)">{{dCount}}</span>
+<div class="prog"><div style="width:{{dProg}}%"></div></div>
+</div>
+<div class="listbox" aria-live="polite">
+<sc-for list="{{guideRows}}" as="g" hint-placeholder-count="8">
+<button class="fl {{g.cls}}" type="button" id="{{g.id}}" aria-current="{{g.current}}" onClick="{{g.pick}}">
+<span class="letter">{{g.letter}}</span>
+<span style="min-width:0;flex:1 1 auto"><span style="display:block;font-weight:700;font-size:14px">{{g.label}}</span><span style="display:block;font-size:13px;color:var(--mut)">{{g.note}}</span></span>
+<span style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px;max-width:46%"><span class="tag act-{{g.act}}">{{g.tagText}}</span><span class="mono {{g.valCls}}" style="font-size:14px;font-weight:600;text-align:right;overflow-wrap:anywhere">{{g.mine}}</span></span>
+</button>
+</sc-for>
+</div>
+<p style="margin:14px 0 0;font-size:13px;color:var(--mut)">{{D.footer}}</p>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isExcelDlg}}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:24px">
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between">
+<div>
+<div class="disp" style="font-size:19px;font-weight:700;overflow-wrap:anywhere">itr-stock-assist-{{fy}}-WORKING.xlsx</div>
+<div style="font-size:14px;color:var(--mut)">{{excelFrom}}</div>
+</div>
+<button class="btn btn-main" type="button" onClick="{{download}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v12"></path><path d="M7 11l5 5 5-5"></path><path d="M4 20h16"></path></svg>Download Excel</button>
+</div>
+<p style="margin:10px 0 0;font-size:14px;color:var(--warn)" aria-live="polite">{{dlMsg}}</p>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:18px">
+<span class="pill">Filing review</span><span class="pill">Filing groups</span><span class="pill">Filing map</span><span class="pill">References</span><span class="pill">Summary</span><span class="pill">Disposed lots</span><span class="pill">Review issues</span><span class="pill">Source rows</span><span class="pill">Import manifest</span>
+</div>
+<div class="panel" style="margin-top:22px;padding:20px 22px">
+<div class="mono" style="font-size:11px;letter-spacing:.12em;color:var(--a2)">STUCK ON A FIELD?</div>
+<p style="margin:8px 0 0;font-size:15px">Give this Excel file to Claude and ask, for example, "Which values go in Schedule 112A?" or "Why is this lot blocked?". Every figure in it points back to your file, sheet and row.</p>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isAcctDlg}}" hint-placeholder-val="{{ false }}">
+<div style="overflow-x:auto;margin-top:24px">
+<table class="tbl">
+<caption style="text-align:left;color:var(--mut);padding:0 0 10px;font-size:13px">For checking against each broker. The ITR only takes the combined row.</caption>
+<thead><tr><th>ACCOUNT</th><th class="r">STCG 111A / INR</th><th class="r">OTHER STCG / INR</th><th class="r">LTCG 112A / INR</th><th class="r">LOTS</th></tr></thead>
+<tbody>
+<sc-for list="{{acctRows}}" as="a" hint-placeholder-count="2">
+<tr><td>{{a.name}}</td><td class="r {{a.sCls}}">{{a.stcg}}</td><td class="r {{a.oCls}}">{{a.other}}</td><td class="r {{a.lCls}}">{{a.ltcg}}</td><td class="r">{{a.lots}}</td></tr>
+</sc-for>
+<tr><td style="font-weight:700">Combined, goes in the ITR</td><td class="r" style="font-weight:700">{{tot.stcg}}</td><td class="r" style="font-weight:700">{{tot.other}}</td><td class="r" style="font-weight:700">{{tot.ltcg}}</td><td class="r" style="font-weight:700">{{tot.lotCount}}</td></tr>
+</tbody>
+</table>
+</div>
+</sc-if>
+
+<sc-if value="{{isLotsDlg}}" hint-placeholder-val="{{ false }}">
+<div style="overflow-x:auto;margin-top:24px">
+<table class="tbl">
+<caption style="text-align:left;color:var(--mut);padding:0 0 10px;font-size:13px">Gain = sale value - cost - expenses. The Excel keeps each lot's file, sheet and row.</caption>
+<thead><tr><th>LOT</th><th>ACCOUNT</th><th>SOLD</th><th>TERM</th><th class="r">SALE VALUE</th><th class="r">COST</th><th class="r">GAIN / INR</th></tr></thead>
+<tbody>
+<sc-for list="{{lotRows}}" as="l" hint-placeholder-count="5">
+<tr><td>{{l.asset}}</td><td>{{l.acct}}</td><td class="mono" style="font-size:13px">{{l.sold}}</td><td class="mono {{l.termCls}}">{{l.term}}</td><td class="r">{{l.p}}</td><td class="r">{{l.c}}</td><td class="r {{l.gCls}}">{{l.g}}</td></tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</sc-if>
+
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-top:24px;padding-top:18px;border-top:1px solid var(--line)">
+<span style="font-size:14px;color:var(--mut)">Click outside or press Esc to go back to the ring.</span>
+<button class="btn btn-ghost" type="button" onClick="{{nextDlg}}">{{nextDlgLabel}}</button>
+</div>
+</div>
+</div>
+</sc-if>
+

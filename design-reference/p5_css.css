@@ -1,0 +1,27 @@
+.paperbox{height:min(600px,70vh);overflow:auto;border-radius:16px;background:#c9ced8;padding:18px;box-sizing:border-box;outline:none}
+.paperbox:focus-visible{outline:2px solid var(--a2);outline-offset:3px}
+.page{background:#ffffff;color:#111111;max-width:660px;margin:0 auto 20px;padding:24px 26px 28px;box-shadow:0 10px 28px rgba(0,0,0,.28);font:13px/1.45 Georgia,'Times New Roman',serif;min-height:420px;box-sizing:border-box}
+.pghead{display:flex;justify-content:space-between;gap:10px;font:600 11px Arial,sans-serif;color:#333333;border-bottom:1.5px solid #111111;padding-bottom:6px;margin-bottom:14px}
+.ptitle{font:700 15px Arial,sans-serif;text-align:center;margin:4px 0 14px}
+.ph{font:700 13px Arial,sans-serif;background:#e6e9ef;padding:7px 9px;border:1px solid #333333;margin-top:10px}
+.pnote{font-size:13px;color:#333333;padding:8px 2px;font-style:italic}
+.prow{display:flex;align-items:stretch;border:1px solid #333333;border-top:none;min-height:38px;transition:background .35s}
+.ph + .prow,.pnote + .prow,.ptitle + .prow{border-top:1px solid #333333}
+.pnum{flex:none;width:52px;padding:7px 6px;border-right:1px solid #333333;font:700 12px Arial,sans-serif}
+.plabel{flex:1 1 auto;padding:7px 8px;min-width:0}
+.plabel.ind1{padding-left:22px}
+.plabel.ind2{padding-left:40px}
+.pbox{flex:none;width:130px;border-left:1px solid #333333;background:#ffffff;transition:background .35s}
+.pbox.nobox{background:#f0f1f4}
+.pbox.skipbox{background:repeating-linear-gradient(45deg,#f2f3f6,#f2f3f6 6px,#e3e6ec 6px,#e3e6ec 12px)}
+.prow.dim{color:#888888;background:#f6f6f6}
+.prow.hl{background:#fff2c2;box-shadow:inset 4px 0 0 #d99a00}
+.prow.hl .pbox{background:#ffd95e}
+.ftable{width:100%;border-collapse:collapse;font:12px Arial,sans-serif;margin:6px 0 10px}
+.ftable th,.ftable td{border:1px solid #333333;padding:7px 6px;text-align:left;vertical-align:top}
+.ftable th{background:#e6e9ef;font-weight:700}
+.ftable td.skipbox{background:repeating-linear-gradient(45deg,#f2f3f6,#f2f3f6 6px,#e3e6ec 6px,#e3e6ec 12px)}
+.ftable tr.rowon td:first-child{background:#fff2c2}
+.ftable td.hl{background:#ffd95e;box-shadow:inset 0 0 0 2px #d99a00}
+.listbox{display:flex;flex-direction:column;gap:4px;height:min(600px,70vh);overflow:auto;padding-right:4px}
+@media (max-width:760px){.page{padding:16px 14px;min-height:0}.pbox{width:72px}.pnum{width:40px}.plabel.ind2{padding-left:26px}.paperbox,.listbox{height:56vh}}

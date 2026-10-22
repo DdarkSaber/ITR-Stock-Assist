@@ -1,0 +1,112 @@
+<sc-if value="{{isForms}}" hint-placeholder-val="{{ false }}">
+<div class="view">
+<section style="position:relative;overflow:hidden;padding:36px clamp(20px,4vw,56px) 80px">
+<div class="ribbons" aria-hidden="true"></div>
+<div style="position:relative;z-index:2;max-width:1280px;margin:0 auto">
+<button class="btn btn-ghost" type="button" onClick="{{goHomeView}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Back to upload</button>
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:40px;margin-top:22px">
+
+<div style="flex:1 1 420px;min-width:0">
+<p class="mono" style="margin:0;font-size:12px;letter-spacing:.18em;color:var(--a2)">STEP 2 / YOUR FORMS / {{fyLabel}} / {{fyAy}}</p>
+<h1 class="disp" style="margin:16px 0 18px;font-size:clamp(36px,4.8vw,66px);line-height:1.05;letter-spacing:-.03em;font-weight:700">Your ITR-2,<br><span class="grad">one form at a time.</span></h1>
+<p style="margin:0;max-width:520px;font-size:18px;color:var(--mut)">Each card is a form or a record built from your reports. Click a card to see which fields to fill, with your values.</p>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:24px;max-width:520px">
+<div class="kpi" style="padding:16px"><div class="mono" style="font-size:10px;letter-spacing:.1em;color:var(--mut)">SHORT-TERM SHARES (20%) / INR</div><div class="mono" style="margin-top:8px;font-size:22px;font-weight:600;color:var(--a3)">{{tot.stcg}}</div></div>
+<div class="kpi" style="padding:16px"><div class="mono" style="font-size:10px;letter-spacing:.1em;color:var(--mut)">LONG-TERM SHARES / INR</div><div class="mono" style="margin-top:8px;font-size:22px;font-weight:600;color:var(--a2)">{{tot.ltcg}}</div></div>
+<div class="kpi" style="padding:16px;grid-column:1 / -1"><div class="mono" style="font-size:10px;letter-spacing:.1em;color:var(--mut)">OTHER SHORT-TERM, SLAB RATE / INR</div><div class="mono" style="margin-top:8px;font-size:22px;font-weight:600;color:var(--warn)">{{tot.other}}</div></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+<sc-for list="{{okFiles}}" as="o" hint-placeholder-count="3">
+<span class="pill" style="font-size:13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="color:var(--a2)"><path d="M5 12l5 5 9-11"></path></svg>{{o.label}}</span>
+</sc-for>
+</div>
+<div style="display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:12px 14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 8%,transparent);max-width:520px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="color:var(--warn);flex:none;margin-top:2px"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
+<p style="margin:0;font-size:13px">Prototype: these values come from demo data, not from your files. The real app fills them from your reports.</p>
+</div>
+<p class="mono" style="margin:20px 0 0;font-size:12px;color:var(--mut);letter-spacing:.04em">Drag to spin. Click a card to open it. Enter works too.</p>
+</div>
+
+<div style="flex:1 1 520px;min-width:0;display:flex;flex-direction:column;align-items:center">
+<div class="stage {{stageCls}}" tabindex="0" role="group" aria-roledescription="carousel" aria-label="Your forms: drag or use arrow keys to rotate, Enter to open the front card" onPointerDown="{{down}}" onPointerMove="{{move}}" onPointerUp="{{up}}" onPointerCancel="{{up}}" onPointerEnter="{{enter}}" onPointerLeave="{{leave}}" onKeyDown="{{key}}" style="width:100%;height:520px;display:flex;align-items:center;justify-content:center">
+<div class="scaler">
+<div class="tilt" style="transform: rotateX({{tiltX}}deg) rotateY({{tiltY}}deg)">
+<div class="ring" style="transform: rotateY({{angle}}deg); transition: {{ringTr}}">
+<div class="halo h1r" aria-hidden="true"></div>
+<div class="halo h2r" aria-hidden="true"></div>
+<div class="orb" aria-hidden="true" style="transform: rotateY({{negAngle}}deg); transition: {{ringTr}}">₹</div>
+
+<div class="card3 {{on0}}" style="transform:rotateY(0deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a3)"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">SCHEDULE CG / A2</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">STCG 111A</div><div class="mono" style="font-size:14px;color:var(--a3)">₹{{tot.stcg}}</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open short-term equity gains (A2) with your values" onClick="{{c0}}"></button>
+</div>
+<div class="card3 {{on1}}" style="transform:rotateY(45deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--warn)"><circle cx="12" cy="12" r="9"></circle><path d="M9 9h6M9 12h6M11 9c3 0 3 6 0 6l4 3"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">SCHEDULE CG / A5</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">Other STCG</div><div class="mono" style="font-size:14px;color:var(--warn)">₹{{tot.other}}</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open other short-term gains (A5) with your values" onClick="{{c1}}"></button>
+</div>
+<div class="card3 {{on2}}" style="transform:rotateY(90deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a2)"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">SCHEDULE 112A + B3</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">LTCG 112A</div><div class="mono" style="font-size:14px;color:var(--a2)">₹{{tot.ltcg}}</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open long-term equity gains (112A) with your values" onClick="{{c2}}"></button>
+</div>
+<div class="card3 {{on3}}" style="transform:rotateY(135deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a1)"><path d="M7 7h12l-3-3"></path><path d="M17 17H5l3 3"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">SCHEDULE CG / E</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">Set-off</div><div class="mono" style="font-size:14px;color:var(--a1)">losses vs gains</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open the set-off table E" onClick="{{c3}}"></button>
+</div>
+<div class="card3 {{on4}}" style="transform:rotateY(180deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a1)"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M3 11h18"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">SCHEDULE CG / F</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">Quarters</div><div class="mono" style="font-size:14px;color:var(--a1)">by sale date</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open the quarter breakup table F" onClick="{{c4}}"></button>
+</div>
+<div class="card3 {{on5}}" style="transform:rotateY(225deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a2)"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 10h18"></path><path d="M9 4v16"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">YOUR RECORD</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">Excel</div><div class="mono" style="font-size:14px;color:var(--a2)">9 sheets</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open the Excel working paper" onClick="{{c5}}"></button>
+</div>
+<div class="card3 {{on6}}" style="transform:rotateY(270deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a3)"><rect x="2" y="6" width="9" height="13" rx="2"></rect><rect x="13" y="4" width="9" height="15" rx="2"></rect></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">BY ACCOUNT</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">Accounts</div><div class="mono" style="font-size:14px;color:var(--a3)">per broker</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open per-account totals" onClick="{{c6}}"></button>
+</div>
+<div class="card3 {{on7}}" style="transform:rotateY(315deg) translateZ(330px)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="color:var(--a1)"><path d="M6 2h9l5 5v15H6z"></path><path d="M14 2v6h6"></path><path d="M9 13h8"></path><path d="M9 17h8"></path></svg>
+<div><div class="mono" style="font-size:11px;letter-spacing:.1em;color:var(--mut)">EVERY SALE</div><div class="disp" style="font-size:24px;font-weight:700;margin-top:4px">Lots</div><div class="mono" style="font-size:14px;color:var(--a1)">{{tot.lotCount}} lots</div><div class="hint" style="margin-top:6px">CLICK TO OPEN</div></div>
+<button class="cardbtn" type="button" aria-label="Open the list of lots" onClick="{{c7}}"></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="panel" style="width:100%;max-width:560px;padding:20px 24px;margin-top:4px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+<div style="min-width:0;flex:1 1 260px" aria-live="polite">
+<div class="mono" style="font-size:11px;letter-spacing:.12em;color:var(--a2)">{{cardKicker}}</div>
+<p style="margin:6px 0 0;font-size:15px;color:var(--ink)">{{cardDesc}}</p>
+</div>
+<div style="display:flex;align-items:center;gap:8px">
+<button class="icon-btn" type="button" aria-label="Previous card" onClick="{{prev}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+<button class="icon-btn" type="button" aria-label="{{pauseLabel}}" onClick="{{togglePause}}">
+<sc-if value="{{paused}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg></sc-if>
+<sc-if value="{{playing}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"></path></svg></sc-if>
+</button>
+<button class="icon-btn" type="button" aria-label="Next card" onClick="{{next}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+</div>
+</div>
+<div style="display:flex;justify-content:center;gap:2px;margin-top:8px">
+<sc-for list="{{dots}}" as="d" hint-placeholder-count="8">
+<span class="dotwrap"><button class="dot {{d.cls}}" type="button" aria-label="{{d.label}}" aria-pressed="{{d.pressed}}" onClick="{{d.pick}}"></button></span>
+</sc-for>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</section>
+</div>
+</sc-if>
+
