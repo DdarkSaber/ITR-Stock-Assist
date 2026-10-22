@@ -37,7 +37,7 @@
   for (const swatch of qsa(".swatch")) {
     swatch.addEventListener("click", () => {
       const root = document.documentElement;
-      root.classList.remove("t-aurora", "t-ember", "t-glacier");
+      root.classList.remove("t-slash", "t-aurora", "t-ember", "t-glacier");
       root.classList.add(`t-${swatch.dataset.theme}`);
       for (const other of qsa(".swatch")) {
         const on = other === swatch;

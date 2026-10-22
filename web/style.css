@@ -315,6 +315,7 @@ body.dlg-open{overflow:hidden}
 .prog{height:6px;border-radius:999px;background:var(--panel2);overflow:hidden;flex:1 1 7.5rem}
 .prog>div{height:100%;width:0;background:linear-gradient(90deg,var(--a1),var(--a2));transition:width .6s}
 .fl{display:flex;gap:.75rem;align-items:flex-start;width:100%;text-align:left;padding:.625rem .75rem;border-radius:.875rem;border:1px solid transparent;background:transparent;color:var(--ink);font:inherit;cursor:pointer;transition:background .3s,border-color .3s,opacity .3s;min-height:44px}
+.listbox>.fl{flex:none}
 .fl:hover{background:var(--panel2)}
 .fl.on{border-color:var(--a2);background:color-mix(in srgb,var(--a2) 10%,transparent)}
 .fl.dim{opacity:.62}
@@ -414,4 +415,192 @@ body.dlg-open{overflow:hidden}
 /* ---------- Forced colors (Windows High Contrast) ---------- */
 @media (forced-colors:active){
   .grad{background:none;color:CanvasText;-webkit-background-clip:border-box;background-clip:border-box}
+}
+
+/* ==========================================================================
+   Slash theme (default) / "midnight vault with gilded ledger lines"
+   Reference: styles.refero.design Slash. Near-black surface stack, Bone body
+   text, one Copper accent for labels, white pill for the main action, a didone
+   serif for display and big numbers, Inter-style sans for UI, hairline borders
+   instead of glow or blur. The gilded gradient is kept for data marks only.
+   No web fonts (CSP and privacy): the serif and sans fall back to local fonts.
+   ========================================================================== */
+.t-slash{
+  --bg:#08080a;--panel:#040406;--panel2:#121317;--ink:#e2e3e9;--mut:#9194a1;--line:#1c1d22;
+  --a1:#cc9166;--a2:#e2e3e9;--a3:#cc9166;--on:#08080a;--warn:#d9b77e;
+  --s-onyx:#040406;--s-carbon:#121317;--s-graphite:#1c1d22;--s-slate:#2e3038;--s-smoke:#464853;
+  --s-ash:#5e616e;--s-steel:#777a88;--s-fog:#9194a1;--s-mist:#acafb9;--s-silver:#c7c9d1;
+  --s-bone:#e2e3e9;--s-white:#ffffff;--s-copper:#cc9166;--s-sage:#9fb89c;--s-rose:#d98b7a;
+  --s-gild:linear-gradient(103deg,#ae9357,#fff0cc 40%,#ae9357 70%,rgba(189,157,79,.25));
+  --s-ring:rgba(255,255,255,.2) 0 0 0 1px;
+  --font:"Inter","Inter Variable","Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-disp:"Ivy Presto Display","Ivy Presto","Playfair Display","Libre Caslon Display","Didot","Bodoni 72","Bodoni MT","Bodoni Moda",Georgia,"Times New Roman",serif;
+  --radius-l:10px;
+  --notice-line:#2e3038;--notice-bg:#040406;--notice-ink:#c7c9d1;
+  --error-line:#d98b7a88;--error-ink:#f0c3b8;
+  --danger:#d98b7a;--alarm-bg:#1d0f0c;--alarm-ink:#f6d8cf;
+}
+.sw-slash{background:radial-gradient(circle at 70% 30%,#cc9166 0 22%,#08080a 24%);box-shadow:inset 0 0 0 1px #464853}
+
+/* Type: serif above 28px, sans below */
+.t-slash body{font:400 1rem/1.5 var(--font);letter-spacing:-.007em}
+.t-slash .disp{font-family:var(--font-disp);font-weight:400;letter-spacing:.01em}
+.t-slash h1.disp,.t-slash h2.disp,.t-slash .display-3{color:var(--s-white)}
+.t-slash .display-1{font-size:clamp(2.75rem,6.4vw,5.5rem);line-height:1.02;letter-spacing:.01em}
+.t-slash .display-2{font-size:clamp(2.25rem,4.6vw,4rem);line-height:1.1;letter-spacing:.01em}
+.t-slash .display-3{font-size:clamp(1.75rem,2.8vw,2.75rem);line-height:1.13}
+.t-slash .forms-title{font-size:clamp(2.75rem,5.6vw,5.5rem);line-height:1.02}
+.t-slash .grad{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--s-white);font-style:italic}
+.t-slash .lede{color:var(--s-fog);font-weight:300;font-size:clamp(1.0625rem,1rem + .3vw,1.25rem);line-height:1.45;letter-spacing:-.02em}
+.t-slash .kicker{font:600 .8125rem/1 var(--font);letter-spacing:.06em;color:var(--s-copper)}
+.t-slash .hint-line{font:400 .8125rem/1.4 var(--font);color:var(--s-ash);letter-spacing:0}
+.t-slash .muted{color:var(--s-fog)}
+.t-slash small{color:var(--s-ash)}
+.t-slash a{color:var(--s-copper)}
+.t-slash a:hover{color:var(--s-white)}
+.t-slash :focus-visible{outline-color:var(--s-white)}
+
+/* Colour roles: LTCG white, STCG copper, slab-rate gold; icons stay monochrome */
+.t-slash .c-a1{color:var(--s-mist)}.t-slash .c-a2{color:var(--s-white)}.t-slash .c-a3{color:var(--s-copper)}.t-slash .c-warn{color:var(--warn)}
+.t-slash .ic-a1,.t-slash .ic-a2,.t-slash .ic-a3,.t-slash .ic-warn{color:var(--s-steel)}
+.t-slash .st-ok{color:var(--s-sage)}.t-slash .st-bad{color:var(--s-rose)}.t-slash .st-mut{color:var(--s-ash)}
+.t-slash .term-LTCG{color:var(--s-white)}.t-slash .term-STCG{color:var(--s-copper)}
+
+/* Layout rhythm: one continuous canvas, generous section gaps */
+.t-slash{--wrap:min(100% - 2rem,1216px)}
+.t-slash .section{padding-block:clamp(4rem,10vw,10rem)}
+.t-slash .hero{padding-top:clamp(2.5rem,6vw,5rem);padding-bottom:clamp(3rem,7vw,6rem)}
+.t-slash .results{border-top-color:var(--line)}
+
+/* Header / footer */
+.t-slash .site-header{background:var(--bg);border-bottom-color:var(--line)}
+.t-slash .logo{border-radius:50%;background:var(--s-white);color:#000;font:400 1.25rem/1 var(--font-disp)}
+.t-slash .brand-name{font:500 .9375rem var(--font);letter-spacing:-.013em;color:var(--s-white)}
+.t-slash .site-nav{font-weight:400}
+.t-slash .navlink{color:var(--s-fog);font-size:.875rem}
+.t-slash .navlink:hover{color:var(--s-white)}
+.t-slash .theme-label{font-family:var(--font);color:var(--s-ash)}
+.t-slash .swatch.on{border-color:var(--s-white)}
+.t-slash .site-footer{color:var(--s-ash);border-top-color:var(--line)}
+
+/* Buttons: one white pill per view, ghost outlines for the rest */
+.t-slash .btn{font:500 .875rem/1.2 var(--font);letter-spacing:-.007em;padding:.625rem 1.25rem;min-height:44px;transition:background .2s,color .2s,border-color .2s,opacity .2s}
+.t-slash .btn-main{background:var(--s-white);color:#000;border:none}
+.t-slash .btn-main:hover:not(:disabled){transform:none;filter:none;background:var(--s-bone);color:#000}
+.t-slash .btn-ghost{background:transparent;color:var(--s-white);border:1px solid var(--s-white)}
+.t-slash .btn-ghost:hover:not(:disabled){background:rgba(255,255,255,.06);border-color:var(--s-white);color:var(--s-white)}
+.t-slash .btn:disabled{opacity:.35}
+.t-slash .icon-btn{background:transparent;border-color:var(--s-slate);color:var(--s-bone)}
+.t-slash .icon-btn:hover{border-color:var(--s-steel);transform:none}
+
+/* Surfaces: opaque, hairline, no blur, no glow */
+.t-slash .panel{background:var(--s-onyx);border:1px solid var(--s-graphite);border-radius:10px;-webkit-backdrop-filter:none;backdrop-filter:none}
+.t-slash .side-card{padding:1.5rem}
+.t-slash .kpi{background:transparent;border:1px solid var(--s-graphite);border-radius:10px;transition:border-color .2s}
+.t-slash .kpi:hover{transform:none;border-color:var(--s-slate)}
+.t-slash .kpi-label{font:500 .75rem/1.3 var(--font);letter-spacing:.04em;color:var(--s-fog)}
+.t-slash .kpi-val{font-family:var(--font-disp);font-weight:400;font-size:clamp(1.75rem,1.4rem + 1.2vw,2.5rem);line-height:1.1;letter-spacing:.01em;font-variant-numeric:lining-nums tabular-nums}
+.t-slash .kpi small{color:var(--s-ash)}
+.t-slash .lab-stat{font-weight:500;color:var(--s-bone)}
+
+/* Controls: pills everywhere */
+.t-slash .inp{background:var(--s-carbon);border:1px solid var(--s-slate);border-radius:9999px;padding:.625rem 1.25rem;font:400 .9375rem var(--font);color:var(--s-bone)}
+.t-slash .inp:focus{outline:1px solid var(--s-white);outline-offset:0;border-color:var(--s-white)}
+.t-slash .field label{font-weight:500;color:var(--s-silver)}
+.t-slash .chip,.t-slash .pill{background:transparent;border:1px solid var(--s-steel);color:var(--s-bone);font:500 .8125rem var(--font)}
+.t-slash .chip:hover{border-color:var(--s-silver)}
+.t-slash .chip.on{background:transparent;border-color:var(--s-white);color:var(--s-white);box-shadow:var(--s-ring)}
+.t-slash .tab{border-color:var(--s-slate);color:var(--s-fog);font:500 .875rem var(--font)}
+.t-slash .tab:hover{color:var(--s-white)}
+.t-slash .tab.on{background:transparent;color:var(--s-white);border-color:var(--s-white)}
+.t-slash .switch{background:var(--s-carbon);border-color:var(--s-slate)}
+.t-slash .knob{background:var(--s-steel)}
+.t-slash .switch.on{background:var(--s-carbon);border-color:var(--s-white)}
+.t-slash .switch.on .knob{background:var(--s-white)}
+.t-slash .seg{border-color:var(--s-slate)}
+.t-slash .seg button{font:500 .8125rem var(--font);color:var(--s-fog)}
+.t-slash .seg button.on{background:var(--s-white);color:#000}
+
+/* Decorative masks: gilded ledger lines, kept faint */
+.t-slash .ribbons{background:var(--s-gild);opacity:.16}
+.t-slash .contours{background:var(--s-bone);opacity:.035}
+
+/* 3D rings: dark cards, hairline edges, a gilded coin instead of a glowing orb */
+.t-slash .card3{background:var(--s-onyx);border:1px solid var(--s-graphite);border-radius:10px;opacity:.86}
+.t-slash .card3.on{background:var(--s-onyx);border-color:var(--s-slate);box-shadow:var(--s-ring)}
+.t-slash .card-kick{font-family:var(--font);font-weight:600;letter-spacing:.06em;color:var(--s-copper)}
+.t-slash .card-big,.t-slash .card-mid,.t-slash .card-form{color:var(--s-white)}
+.t-slash .card-sub{color:var(--s-fog)}
+.t-slash .hint{font-family:var(--font);font-weight:500;letter-spacing:.06em;color:var(--s-ash)}
+.t-slash .orb{background:radial-gradient(circle at 35% 30%,#fff0cc 0%,#ae9357 38%,#4a3c1f 78%,#121317 100%);color:#08080a;font-family:var(--font-disp);font-weight:400;box-shadow:var(--s-ring)}
+.t-slash .stage::before{background:radial-gradient(closest-side,rgba(174,147,87,.12) 30%,transparent 100%)}
+.t-slash .h1r{border:1px solid var(--s-slate)}
+.t-slash .h2r{border:1px dashed var(--s-graphite)}
+.t-slash .ring-kicker{color:var(--s-copper)}
+.t-slash .ring-desc{color:var(--s-mist)}
+.t-slash .dot{border-color:var(--s-smoke)}
+.t-slash .dot.on{background:var(--s-white);border-color:var(--s-white);transform:none}
+
+/* Upload */
+.t-slash .drop{border:1px dashed var(--s-smoke);border-radius:10px;background:var(--s-onyx)}
+.t-slash .drop:hover,.t-slash .drop.hot{border-color:var(--s-silver);background:var(--s-carbon);transform:none}
+.t-slash .drop-title{font-size:clamp(1.5rem,2.4vw,2rem);color:var(--s-white)}
+.t-slash .frow{background:transparent;border-color:var(--s-graphite);border-radius:10px}
+.t-slash .frow svg{color:var(--s-steel)}
+.t-slash #status{color:var(--s-bone)}
+.t-slash .error,.t-slash .notice{border-radius:10px}
+.t-slash .intraday-warning{border-width:1px;border-radius:10px;font-weight:600}
+.t-slash .caution{border-color:var(--s-slate);background:transparent;color:var(--s-mist);border-radius:10px}
+.t-slash .caution svg{color:var(--warn)}
+
+/* Tables: ledger hairlines, numbers right-aligned */
+.t-slash .tbl th{font:500 .8125rem var(--font);letter-spacing:0;text-transform:none;color:var(--s-fog);border-bottom-color:var(--s-slate)}
+.t-slash .tbl td{color:var(--s-bone);border-bottom-color:var(--s-graphite)}
+.t-slash .tbl .r{font-variant-numeric:tabular-nums}
+.t-slash .tbl caption{color:var(--s-ash)}
+.t-slash .tag{font-family:var(--font);font-weight:600;border-radius:9999px;padding:.1875rem .5rem;color:var(--s-sage);box-shadow:inset 0 0 0 1px currentColor}
+.t-slash .tag.blocked{color:var(--warn)}
+
+/* Holding lab: the one place the gold gradient draws data */
+.t-slash .lab-term{color:var(--s-white)}
+.t-slash .lab-status{font-family:var(--font);font-weight:500}
+.t-slash .track{background:var(--s-carbon);border-color:var(--s-graphite)}
+.t-slash .fill{background:var(--s-gild)}
+.t-slash .mark{background:var(--s-white);width:1px}
+.t-slash .mini-label{font-family:var(--font);font-weight:600;letter-spacing:.06em;color:var(--s-copper)}
+
+/* How it works */
+.t-slash .deckcard{background:var(--s-onyx);border-color:var(--s-graphite);border-radius:10px}
+.t-slash .deck-num{color:var(--s-white);font-style:normal}
+.t-slash .deck-text h3{color:var(--s-white);font-size:clamp(1.75rem,2.6vw,2.25rem)}
+.t-slash .deck-text p{color:var(--s-fog)}
+
+/* Privacy flow */
+.t-slash .node{background:var(--s-onyx);border-color:var(--s-graphite);border-radius:10px}
+.t-slash .node-k{font-family:var(--font);font-weight:600;letter-spacing:.06em;color:var(--s-copper)}
+.t-slash .node-t{color:var(--s-white);font-weight:500}
+.t-slash .flow-arrow{color:var(--s-smoke)}
+.t-slash .limitations p{color:var(--s-ash)}
+
+/* Dialog */
+.t-slash .ovl{background:rgba(4,4,6,.86);-webkit-backdrop-filter:none;backdrop-filter:none}
+.t-slash .dlg{background:var(--bg);border-color:var(--s-graphite);border-radius:10px}
+.t-slash .dlg-title{color:var(--s-white);font-size:clamp(1.75rem,3.4vw,2.75rem);letter-spacing:.01em}
+.t-slash .dlg-foot{border-top-color:var(--line)}
+.t-slash .prog{background:var(--s-carbon)}
+.t-slash .prog>div{background:var(--s-gild)}
+.t-slash .fl{border-radius:10px;color:var(--s-bone)}
+.t-slash .fl:hover{background:var(--s-carbon)}
+.t-slash .fl.on{border-color:var(--s-slate);background:var(--s-carbon);box-shadow:var(--s-ring)}
+.t-slash .fl-label{font-weight:500}
+.t-slash .fl-val{color:var(--s-white)}
+.t-slash .letter{font-family:var(--font);font-weight:600;background:transparent;border-color:var(--s-slate);border-radius:9999px;color:var(--s-mist)}
+.t-slash .act-FILL{color:#000;background:var(--s-white);box-shadow:none}
+.t-slash .act-SKIP{color:var(--s-ash);background:transparent;box-shadow:inset 0 0 0 1px var(--s-slate);border:none}
+.t-slash .act-AUTO{color:var(--s-copper);background:transparent;box-shadow:inset 0 0 0 1px var(--s-copper)}
+.t-slash .act-CHECK{color:#1a1200;background:var(--warn);box-shadow:none}
+.t-slash .paperbox{background:#1c1d22;border-radius:10px}
+
+@media (max-width:639.98px){
+  .t-slash .dlg{border-radius:0}
 }
