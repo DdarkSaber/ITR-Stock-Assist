@@ -85,7 +85,7 @@ def _dividend_summary(rows, stock):
     matches = []
     for line, values in enumerate(rows, 1):
         label = _text(values[0]).casefold()
-        if label in SECTIONS:
+        if tuple(_text(value) for value in values[:len(STOCK_HEADERS)]) == STOCK_HEADERS:
             break
         if label.startswith("dividend") or label.startswith("total dividend"):
             amounts = [value for value in values[1:] if _text(value)]

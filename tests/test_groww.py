@@ -25,6 +25,8 @@ def stock_book(rows=None, offset=7, title="Capital Gains Statement for stocks", 
     for _ in range(offset):
         sheet.append([])
     if dividends is not None:
+        sheet.append(["Intraday", 0.05])
+        sheet.append(["Others"])
         sheet.append(["Total Dividends", dividends])
     for section in ("Intraday trades", "Short Term trades", "Long Term trades", "Other trades"):
         sheet.append([section])
@@ -290,7 +292,7 @@ def test_stock_summary_dividends_are_informational_and_mapped_to_schedule_os():
     assert data["dividend_notice"] == "Report in Schedule OS"
     assert data["dividend_reports"] == [{
         "source_file": "synthetic-dividends.xlsx", "source_sheet": "Synthetic stock CG",
-        "source_line": 9, "amount": "1234.56",
+        "source_line": 11, "amount": "1234.56",
     }]
     assert data["filing"]["groups"][0]["net"] == "100.2"
     book = load_workbook(io.BytesIO(workbook_bytes(data)))
