@@ -283,6 +283,16 @@ def test_forms_ring_dialog_and_responsive_layout():
             expect(page.locator("#results")).to_be_visible(timeout=180000)
             cards = page.locator(".forms-ring .card3")
             expect(cards).to_have_count(8)
+            hit_front = """() => {
+                const box = document.querySelector('.forms-ring .card3.on .cardbtn').getBoundingClientRect();
+                const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+                return hit.classList.contains('cardbtn');
+            }"""
+            for dot in (2, 6, 0):
+                page.locator('[data-ring="forms"] .dot').nth(dot).click()
+                page.locator('[data-ring="forms"] .stage').hover()
+                page.wait_for_timeout(1300)
+                assert page.evaluate(hit_front), dot
             expect(page.locator('.forms-ring [data-slot="stcg"]')).to_have_text("\u20b91,965.20")
             expect(page.locator('.forms-ring [data-slot="ltcg"]')).to_have_text("\u20b97,500.00")
             expect(page.locator("#kpi-stcg")).to_have_text("1,965.20")
