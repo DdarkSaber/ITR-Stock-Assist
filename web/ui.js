@@ -917,6 +917,7 @@
     });
   }
   function setStep(k) {
+    if (!dlg.kind || !forms || !forms[dlg.kind]) return;
     const vis = visibleFields();
     dlg.step = Math.max(0, Math.min(k, vis.length - 1));
     const active = vis[dlg.step].i;
