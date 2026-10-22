@@ -34,6 +34,7 @@ function invalidate() {
   $("error").hidden = true;
   $("status").textContent = "";
   controls();
+  document.dispatchEvent(new Event("itr:clear"));
 }
 function fail(error) {
   console.error(error);
@@ -157,6 +158,7 @@ function render(data) {
   }
   $("lots").replaceChildren(fragment);
   $("results").hidden = false;
+  document.dispatchEvent(new CustomEvent("itr:render", { detail: data }));
 }
 $("files").addEventListener("change", async event => {
   invalidate();
