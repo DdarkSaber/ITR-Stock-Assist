@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="t-aurora">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -8,53 +8,382 @@
   <title>ITR Stock Assist | Indian capital gains</title>
   <link rel="stylesheet" href="./web/style.css">
   <script src="./web/app.js" defer></script>
+  <script src="./web/ui.js" defer></script>
 </head>
 <body>
-  <header><div class="brand"><span class="logo" aria-hidden="true">S</span> ITR Stock Assist <span class="edition">SOLAR COPPER</span></div><span class="privacy">Local processing / no financial uploads</span></header>
-  <main>
-    <section class="hero">
-      <div><p class="eyebrow">INDIAN EQUITY / EQUITY MUTUAL FUNDS</p><h1>Your capital gains,<br>made <em>clear.</em></h1><p class="intro">From disposed lots to a traceable working paper. Review short- and long-term gains, resolve the gaps, and take a clearer workbook into filing.</p></div>
-      <div class="year"><label for="fy">Financial year</label><select id="fy"><option value="2025-26">FY 2025-26 / AY 2026-27</option><option value="2024-25">FY 2024-25 / AY 2025-26</option></select><small>Only validated financial years are offered.</small></div>
-    </section>
-    <nav aria-label="Workflow"><span>01 &nbsp; Import lots</span><span>02 &nbsp; Review gains</span><span>03 &nbsp; Export working paper</span></nav>
-    <section class="panel" aria-labelledby="import-heading">
-      <div class="section-top"><div><p class="eyebrow">START WITH YOUR SOURCE</p><h2 id="import-heading">Bring the numbers. Keep control.</h2></div><span class="pill">Groww XLSX + CSV</span></div>
-      <p class="muted">Import Groww Stock Capital Gains or Mutual Fund Capital Gains XLSX reports, or verified canonical CSV lots. Do not use P&amp;L reports: realised trades overlap, and unrealised holdings are not disposals.</p>
-      <div class="import-grid">
-        <label class="upload" for="files"><span class="upload-icon" aria-hidden="true">+</span><strong>Choose Groww CG XLSX or CSV files</strong><span>Up to 10 files / 2 MB each / 10,000 total rows</span><input id="files" type="file" accept=".csv,.xlsx" multiple></label>
-        <div class="guide"><h3>Broker figures, without assumptions</h3><p>Native reports show gross gains and provisional broker totals. Missing expense/STT/cost-history confirmations remain pending, not invented. Use verified canonical lots for working-paper inclusion.</p><a href="./samples/canonical-demo.csv" download>Download canonical sample CSV</a><button id="sample" class="ghost">Try synthetic sample</button><small>Sample includes one intentionally blocked lot.</small></div>
-      </div>
-      <p id="file-summary" class="muted">No files selected. Data stays in memory until you reset or close this tab.</p>
-      <div class="actions"><button id="review" class="primary" disabled>Review capital gains</button><button id="reset" class="ghost">Clear session</button></div>
-      <p class="runtime-note">The first review downloads the public Python runtime; XLSX import/export loads the runtime's package installer and bundled openpyxl wheels. Internet is needed for initial loading. No analytics, account, local storage or financial-data requests.</p>
-      <p id="status" role="status" aria-live="polite"></p>
-      <div id="error" class="error" role="alert" hidden></div>
-    </section>
-    <section id="results" hidden aria-labelledby="results-heading">
-      <div class="results-top"><div><p class="eyebrow">YOUR WORKING PAPER</p><h2 id="results-heading">Review before you file.</h2></div><button id="export" class="primary">Download XLSX</button></div>
-      <p id="review-state" class="notice"></p>
-      <p id="intraday-warning" class="intraday-warning" role="alert" hidden></p>
-      <p id="dividend-info" class="notice" hidden></p>
-      <ul id="manifest" class="muted"></ul>
-      <div class="panel table-panel">
-        <h3>ITR-2 filing review / candidate schedule destinations</h3>
-        <p id="filing-year" class="muted"></p>
-        <p class="muted">INR rupees, not lakhs. READY_WORKING means attested inputs, not a filing-ready return. Broker figures remain PROVISIONAL. Positive gains and losses are shown separately; no annual threshold, loss set-off or final taxable amount is computed.</p>
-        <div class="table-scroll" tabindex="0" role="region" aria-label="ITR-2 candidate filing groups">
-          <table><caption>Observed groups only; no group does not mean a verified zero. The workbook adds a filing review and machine-readable field map with unknowns left blank.</caption><thead><tr><th>Candidate schedule</th><th>Period</th><th>Evidence basis</th><th>Status</th><th>Sale INR</th><th>Cost INR</th><th>Expenses INR</th><th>Positive gains INR</th><th>Losses INR</th><th>Net INR</th></tr></thead><tbody id="filing-groups"></tbody></table>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="ITR Stock Assist home"><span class="logo disp" aria-hidden="true">S</span><span class="disp brand-name">ITR Stock Assist</span></a>
+    <nav class="site-nav" aria-label="Sections"><a class="navlink" href="#upload">Upload</a><a class="navlink" href="#lab">Holding lab</a><a class="navlink" href="#how">How it works</a><a class="navlink" href="#private">Privacy</a></nav>
+    <div class="theme-pick" role="group" aria-label="Colour theme">
+      <span class="mono theme-label">THEME</span>
+      <button class="swatch sw-aurora on" type="button" data-theme="aurora" aria-label="Aurora theme" aria-pressed="true"></button>
+      <button class="swatch sw-ember" type="button" data-theme="ember" aria-label="Ember theme" aria-pressed="false"></button>
+      <button class="swatch sw-glacier" type="button" data-theme="glacier" aria-label="Glacier theme" aria-pressed="false"></button>
+    </div>
+  </header>
+  <main id="top">
+    <section class="hero section">
+      <div class="ribbons" aria-hidden="true"></div>
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <p class="kicker">ITR STOCK ASSIST / PERSONAL BUILD</p>
+          <h1 class="disp display-1">Capital gains,<br>in <span class="grad">three dimensions.</span></h1>
+          <p class="lede">Upload your Groww capital-gains reports, see your short- and long-term gains, and get walked through where each number goes in ITR-2.</p>
+          <div class="btn-row"><a class="btn btn-main" href="#upload">Upload my reports</a><a class="btn btn-ghost" href="#lab">Open the holding lab</a></div>
+          <p class="mono hint-line">Drag the ring. Hover to tilt. Arrow keys work too.</p>
+        </div>
+        <div class="ring-wrap" data-ring="home">
+          <div class="stage" tabindex="0" role="group" aria-roledescription="carousel" aria-label="Feature ring: drag or use arrow keys to rotate">
+            <div class="tilt">
+              <div class="ring">
+                <div class="halo h1r" aria-hidden="true"></div>
+                <div class="halo h2r" aria-hidden="true"></div>
+                <div class="orb disp" aria-hidden="true">₹</div>
+                <div class="card3" data-k="LISTED EQUITY / LTCG" data-d="A sale on or after the one-year anniversary of purchase is long-term. Calendar months, not a 365-day count.">
+                  <svg class="ic ic-a2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
+                  <div><div class="mono card-kick">LISTED EQUITY</div><div class="disp card-big">LTCG</div><div class="card-sub">held over 12 months</div></div>
+                  <button class="cardbtn" type="button" aria-label="Show card 1: listed equity, long-term"></button>
+                </div>
+                <div class="card3" data-k="EQUITY MUTUAL FUND / STCG" data-d="Sold before the anniversary? Short-term. The same 12-month rule applies to equity-oriented funds.">
+                  <svg class="ic ic-a3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                  <div><div class="mono card-kick">EQUITY MUTUAL FUND</div><div class="disp card-big">STCG</div><div class="card-sub">12 months or less</div></div>
+                  <button class="cardbtn" type="button" aria-label="Show card 2: equity mutual fund, short-term"></button>
+                </div>
+                <div class="card3" data-k="MULTIPLE ACCOUNTS" data-d="Upload reports from every account. The return has no per-account rows, so gains are combined, with a per-account breakdown kept for checking.">
+                  <svg class="ic ic-a1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2" y="6" width="9" height="13" rx="2"></rect><rect x="13" y="4" width="9" height="15" rx="2"></rect></svg>
+                  <div><div class="mono card-kick">MULTIPLE ACCOUNTS</div><div class="disp card-mid">Groww + CSV</div><div class="card-sub">one combined return</div></div>
+                  <button class="cardbtn" type="button" aria-label="Show card 3: multiple accounts"></button>
+                </div>
+                <div class="card3" data-k="SOURCE TRACE" data-d="Each lot keeps its file, sheet and row, so every number in the workbook points back to its source.">
+                  <svg class="ic ic-a2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 10h18"></path><path d="M9 4v16"></path></svg>
+                  <div><div class="mono card-kick">SOURCE TRACE</div><div class="disp card-mid">Sheet + row</div><div class="card-sub">every figure traceable</div></div>
+                  <button class="cardbtn" type="button" aria-label="Show card 4: source trace"></button>
+                </div>
+                <div class="card3" data-k="WORKING PAPER" data-d="A nine-sheet Excel file: filing review, filing groups, field map, lots, issues and source rows.">
+                  <svg class="ic ic-a3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"></path><path d="M14 2v6h6"></path><path d="M9 13h8"></path><path d="M9 17h8"></path></svg>
+                  <div><div class="mono card-kick">WORKING PAPER</div><div class="disp card-big">9 sheets</div><div class="card-sub">Excel, exact decimals</div></div>
+                  <button class="cardbtn" type="button" aria-label="Show card 5: working paper"></button>
+                </div>
+                <div class="card3" data-k="ITR WALKTHROUGH" data-d="After you review, every ITR-2 form gets its own card, with the values to fill from your reports.">
+                  <svg class="ic ic-a1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 4l7 17 2-7 7-2z"></path></svg>
+                  <div><div class="mono card-kick">ITR WALKTHROUGH</div><div class="disp card-mid">Fill it step by step</div><div class="card-sub">animated form guide</div></div>
+                  <button class="cardbtn" type="button" aria-label="Show card 6: ITR walkthrough"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel ring-info">
+            <div class="ring-info-top">
+              <div class="ring-info-text" aria-live="polite"><div class="kicker ring-kicker"></div><p class="ring-desc"></p></div>
+              <div class="ring-ctrls">
+                <button class="icon-btn ring-prev" type="button" aria-label="Previous card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+                <button class="icon-btn ring-pause" type="button" aria-label="Pause rotation"><svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"></path></svg><svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg></button>
+                <button class="icon-btn ring-next" type="button" aria-label="Next card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+              </div>
+            </div>
+            <div class="dots"></div>
+          </div>
         </div>
       </div>
-      <div id="broker-summary" class="panel" hidden>
-        <h3>Groww-reported gains / provisional, not verified working-paper totals</h3>
-        <p class="muted">Only supported, reconciled, non-duplicate equity rows within the selected FY enter this separate summary. Fees, STT and acquisition history still need verification. Debt, intraday, ambiguous and out-of-year rows are excluded. Do not add these figures to canonical totals for the same disposals.</p>
-        <div class="kpis"><article><span>BROKER STCG / INR</span><strong id="broker-stcg"></strong></article><article><span>BROKER LTCG / INR</span><strong id="broker-ltcg"></strong></article><article><span>PROVISIONAL ROWS</span><strong id="broker-count"></strong></article></div>
-      </div>
-      <h3>Working-paper totals / confirmed canonical lots only</h3>
-      <div class="kpis"><article><span>NET STCG / INR</span><strong id="stcg"></strong><small>Included canonical lots only</small></article><article><span>NET LTCG / INR</span><strong id="ltcg"></strong><small>Before exemptions or set-off</small></article><article><span>INCLUDED LOTS</span><strong id="included"></strong><small>Based on supplied attestations</small></article><article><span>NEEDS REVIEW / EXCLUDED</span><strong id="blocked"></strong><small>Not included in gain totals</small></article></div>
-      <div class="panel table-panel"><div class="table-scroll" tabindex="0" role="region" aria-label="Disposed lots review"><table><caption>Disposed-lot review (first 200 rows; workbook includes all rows)</caption><thead><tr><th>Asset / source</th><th>Acquired / sold</th><th>Status / term</th><th>Gain INR</th><th>Review notes</th></tr></thead><tbody id="lots"></tbody></table></div></div>
     </section>
-    <section class="limitations"><h2>A working paper, not a tax return.</h2><p>Groww stock and mutual-fund capital-gains layouts only; other broker-native formats and P&amp;L reports are rejected. Only delivery-based listed Indian equity and verified equity-oriented mutual funds are in scope. Holdings over 12 calendar months are classified as long-term. No tax liability, 111A/112A eligibility certification, grandfathering, corporate-action reconstruction, FIFO matching, debt-fund calculations, F&amp;O, intraday, AIS integration or official ITR upload schema.</p><p>FY 2024-25 and FY 2025-26 only. Native rows remain pending verification and outside confirmed working-paper totals. Check every source against the broker report and consult your tax adviser. <a href="https://pib.gov.in/PressReleasePage.aspx?PRID=2036604&amp;reg=3&amp;lang=2" target="_blank" rel="noreferrer">CBDT holding-period reference</a>.</p></section>
+
+    <section id="upload" class="section upload-section" aria-labelledby="import-heading">
+      <div class="wrap">
+        <p class="kicker">STEP 1 / UPLOAD</p>
+        <h2 id="import-heading" class="disp display-2 rise">Drop in your broker reports.</h2>
+        <p class="lede">Add the capital-gains report from every account you used this year. Files are read in this browser tab only.</p>
+        <div class="upload-grid">
+          <div class="panel upload-main">
+            <div class="fy-row">
+              <div class="field fy-field"><label for="fy">Financial year</label><select id="fy" class="inp"><option value="2025-26">FY 2025-26 / AY 2026-27</option><option value="2024-25">FY 2024-25 / AY 2025-26</option></select><small class="muted">Only validated financial years are offered.</small></div>
+              <button id="sample" class="btn btn-ghost" type="button">Try synthetic sample</button>
+            </div>
+            <label for="files" class="drop">
+              <input id="files" class="vh" type="file" accept=".csv,.xlsx" multiple>
+              <svg class="ic-lg ic-a2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 16V4"></path><path d="M7 9l5-5 5 5"></path><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg>
+              <span class="disp drop-title">Drop files here or click to choose</span>
+              <span class="muted">Groww CG .xlsx or canonical .csv / up to 10 files / 2 MB each / 10,000 total rows</span>
+            </label>
+            <div id="file-list" class="file-list" hidden></div>
+            <p id="file-summary" class="muted">No files selected. Data stays in memory until you reset or close this tab.</p>
+            <div class="actions"><button id="review" class="btn btn-main" disabled>Review capital gains</button><button id="reset" class="btn btn-ghost">Clear session</button></div>
+            <p id="status" role="status" aria-live="polite"></p>
+            <div id="error" class="error" role="alert" hidden></div>
+            <p class="runtime-note">The first review downloads the public Python runtime; XLSX import/export loads the runtime's package installer and bundled openpyxl wheels. Internet is needed for initial loading. No analytics, account, local storage or financial-data requests.</p>
+          </div>
+          <div class="upload-side">
+            <div class="panel side-card">
+              <div class="kicker">WHICH REPORTS</div>
+              <ul class="doc-list">
+                <li><b>Groww stocks</b>: the Stocks Capital Gains Report for the year, downloaded as .xlsx.</li>
+                <li><b>Groww mutual funds</b>: the Mutual Funds Capital Gains Report, downloaded as .xlsx.</li>
+                <li><b>Any other broker</b>: your verified lots in the canonical CSV template, one disposed acquisition lot per row.</li>
+              </ul>
+              <p class="muted small">Not accepted: P&amp;L reports (realised trades overlap and unrealised holdings are not disposals), PDFs, old .xls files.</p>
+              <a class="small" href="./samples/canonical-demo.csv" download>Download canonical sample CSV</a>
+            </div>
+            <div class="panel side-card">
+              <div class="kicker">SEVERAL ACCOUNTS?</div>
+              <p>Add every account's report together. The ITR has no per-account rows, so gains are combined into one return. You still get a per-account breakdown to check against each broker, and duplicate lots across files are flagged.</p>
+            </div>
+            <div class="panel side-card">
+              <div class="kicker">BROKER FIGURES, WITHOUT ASSUMPTIONS</div>
+              <p class="muted">Native reports show gross gains and provisional broker totals. Missing expense, STT and cost-history confirmations stay pending, not invented. The synthetic sample includes one intentionally blocked lot.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="results" class="section results" hidden aria-labelledby="results-heading">
+      <div class="ribbons" aria-hidden="true"></div>
+      <div class="wrap">
+        <div class="results-top">
+          <a class="btn btn-ghost" href="#upload"><svg class="ic-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Back to upload</a>
+          <button id="export" class="btn btn-main"><svg class="ic-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v12"></path><path d="M7 11l5 5 5-5"></path><path d="M4 20h16"></path></svg>Download XLSX</button>
+        </div>
+        <p id="intraday-warning" class="intraday-warning" role="alert" hidden></p>
+        <div class="forms-grid">
+          <div class="forms-copy">
+            <p class="kicker">STEP 2 / YOUR FORMS / <span id="forms-fy"></span></p>
+            <h2 id="results-heading" class="disp display-1 forms-title">Your ITR-2,<br><span class="grad">one form at a time.</span></h2>
+            <p class="lede">Each card is a form or a record built from your reports. Click a card to see which fields to fill, with your values.</p>
+            <div class="kpi-grid">
+              <div class="kpi"><div class="mono kpi-label">SHORT-TERM SHARES 111A (20%) / INR</div><div id="kpi-stcg" class="mono kpi-val c-a3"></div></div>
+              <div class="kpi"><div class="mono kpi-label">LONG-TERM SHARES 112A / INR</div><div id="kpi-ltcg" class="mono kpi-val c-a2"></div></div>
+              <div class="kpi kpi-wide"><div class="mono kpi-label">OTHER SHORT-TERM, SLAB RATE (A5) / INR</div><div id="kpi-other" class="mono kpi-val c-warn"></div></div>
+            </div>
+            <div id="forms-files" class="pill-row"></div>
+            <div class="caution"><svg class="ic-sm c-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg><p>Working paper, not a filing-ready return. Broker figures stay PROVISIONAL until you verify costs, fees and STT against each report. No threshold, set-off or tax is computed.</p></div>
+            <p class="mono hint-line">Drag to spin. Click a card to open it. Enter works too.</p>
+          </div>
+          <div class="ring-wrap" data-ring="forms">
+            <div class="stage" tabindex="0" role="group" aria-roledescription="carousel" aria-label="Your forms: drag or use arrow keys to rotate, Enter to open the front card">
+              <div class="tilt">
+                <div class="ring forms-ring">
+                  <div class="halo h1r" aria-hidden="true"></div>
+                  <div class="halo h2r" aria-hidden="true"></div>
+                  <div class="orb disp" aria-hidden="true">₹</div>
+                  <div class="card3" data-card="stcg" data-k="SCHEDULE CG / A2 / STCG (111A)" data-d="Short-term gains on shares and equity funds, taxed at 20%. Click to see each field and your value.">
+                    <svg class="ic ic-a3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                    <div><div class="mono card-kick">SCHEDULE CG / A2</div><div class="disp card-form">STCG 111A</div><div class="mono card-val c-a3" data-slot="stcg"></div><div class="hint">CLICK TO OPEN</div></div>
+                    <button class="cardbtn" type="button" aria-label="Open short-term equity gains (A2) with your values"></button>
+                  </div>
+                  <div class="card3" data-card="other" data-k="SCHEDULE CG / A5 / OTHER STCG" data-d="Gold and silver funds, non-equity ETFs and other non-equity funds. Taxed at your slab rate.">
+                    <svg class="ic ic-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9 9h6M9 12h6M11 9c3 0 3 6 0 6l4 3"></path></svg>
+                    <div><div class="mono card-kick">SCHEDULE CG / A5</div><div class="disp card-form">Other STCG</div><div class="mono card-val c-warn" data-slot="other"></div><div class="hint">CLICK TO OPEN</div></div>
+                    <button class="cardbtn" type="button" aria-label="Open other short-term gains (A5) with your values"></button>
+                  </div>
+                  <div class="card3" data-card="ltcg" data-k="SCHEDULE 112A / LTCG" data-d="Long-term gains on shares and equity funds, plus where the total lands in Schedule CG B3.">
+                    <svg class="ic ic-a2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
+                    <div><div class="mono card-kick">SCHEDULE 112A + B3</div><div class="disp card-form">LTCG 112A</div><div class="mono card-val c-a2" data-slot="ltcg"></div><div class="hint">CLICK TO OPEN</div></div>
+                    <button class="cardbtn" type="button" aria-label="Open long-term equity gains (112A) with your values"></button>
+                  </div>
+                  <div class="card3" data-card="setoff" data-k="SCHEDULE CG / E / SET-OFF" data-d="Your gains and losses side by side. The app does not compute set-off; check what the portal fills in.">
+                    <svg class="ic ic-a1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 7h12l-3-3"></path><path d="M17 17H5l3 3"></path></svg>
+                    <div><div class="mono card-kick">SCHEDULE CG / E</div><div class="disp card-form">Set-off</div><div class="mono card-val c-a1">losses vs gains</div><div class="hint">CLICK TO OPEN</div></div>
+                    <button class="cardbtn" type="button" aria-label="Open the set-off table E"></button>
+                  </div>
+                  <div class="card3" data-card="tablef" data-k="SCHEDULE CG / F / QUARTERS" data-d="Which quarter each gain arose in, from your sale dates.">
+                    <svg class="ic ic-a1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M3 11h18"></path></svg>
+                    <div><div class="mono card-kick">SCHEDULE CG / F</div><div class="disp card-form">Quarters</div><div class="mono card-val c-a1">by sale date</div><div class="hint">CLICK TO OPEN</div></div>
+                    <button class="cardbtn" type="button" aria-label="Open the quarter breakup table F"></button>
+                  </div>
+                  <div class="card3" data-card="excel" data-k="EXCEL WORKING PAPER" data-d="Your separate record of everything. Bring it to the front and click it to download the nine-sheet workbook.">
+                    <svg class="ic ic-a2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 10h18"></path><path d="M9 4v16"></path></svg>
+                    <div><div class="mono card-kick">YOUR RECORD</div><div class="disp card-form">Excel</div><div class="mono card-val c-a2">9 sheets</div><div class="hint">CLICK TO DOWNLOAD</div></div>
+                    <button class="cardbtn" type="button" aria-label="Download the Excel working paper"></button>
+                  </div>
+                  <div class="card3" data-card="accounts" data-k="YOUR ACCOUNTS" data-d="Totals for each broker account and file, so you can check them against each broker.">
+                    <svg class="ic ic-a3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2" y="6" width="9" height="13" rx="2"></rect><rect x="13" y="4" width="9" height="15" rx="2"></rect></svg>
+                    <div><div class="mono card-kick">BY ACCOUNT</div><div class="disp card-form">Accounts</div><div class="mono card-val c-a3" data-slot="accounts"></div><div class="hint">CLICK TO OPEN</div></div>
+                    <button class="cardbtn" type="button" aria-label="Open per-account totals"></button>
+                  </div>
+                  <div class="card3" data-card="lots" data-k="YOUR LOTS" data-d="Every disposed lot by status: included, review required or blocked. The full table is below.">
+                    <svg class="ic ic-a1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"></path><path d="M14 2v6h6"></path><path d="M9 13h8"></path><path d="M9 17h8"></path></svg>
+                    <div><div class="mono card-kick">EVERY SALE</div><div class="disp card-form">Lots</div><div class="mono card-val c-a1" data-slot="lots"></div><div class="hint">CLICK TO OPEN</div></div>
+                    <button class="cardbtn" type="button" aria-label="Open the lot status summary"></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="panel ring-info">
+              <div class="ring-info-top">
+                <div class="ring-info-text" aria-live="polite"><div class="kicker ring-kicker"></div><p class="ring-desc"></p></div>
+                <div class="ring-ctrls">
+                  <button class="icon-btn ring-prev" type="button" aria-label="Previous card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+                  <button class="icon-btn ring-pause" type="button" aria-label="Pause rotation"><svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"></path></svg><svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg></button>
+                  <button class="icon-btn ring-next" type="button" aria-label="Next card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+                </div>
+              </div>
+              <div class="dots"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-block">
+          <p class="kicker">YOUR WORKING PAPER</p>
+          <h3 class="disp display-3">Review before you file.</h3>
+          <p id="review-state" class="notice"></p>
+          <p id="dividend-info" class="notice" hidden></p>
+          <ul id="manifest" class="muted manifest"></ul>
+          <div class="panel table-panel">
+            <h4>ITR-2 filing review / candidate schedule destinations</h4>
+            <p id="filing-year" class="muted"></p>
+            <p class="muted small">INR rupees, not lakhs. READY_WORKING means attested inputs, not a filing-ready return. Broker figures remain PROVISIONAL. Positive gains and losses are shown separately; no annual threshold, loss set-off or final taxable amount is computed.</p>
+            <div class="table-scroll" tabindex="0" role="region" aria-label="ITR-2 candidate filing groups">
+              <table class="tbl"><caption>Observed groups only; no group does not mean a verified zero. The workbook adds a filing review and machine-readable field map with unknowns left blank.</caption><thead><tr><th>Candidate schedule</th><th>Period</th><th>Evidence basis</th><th>Status</th><th>Sale INR</th><th>Cost INR</th><th>Expenses INR</th><th>Positive gains INR</th><th>Losses INR</th><th>Net INR</th></tr></thead><tbody id="filing-groups"></tbody></table>
+            </div>
+          </div>
+          <div id="broker-summary" class="panel table-panel" hidden>
+            <h4>Groww-reported gains / provisional, not verified working-paper totals</h4>
+            <p class="muted small">Only supported, reconciled, non-duplicate equity rows within the selected FY enter this separate summary. Fees, STT and acquisition history still need verification. Debt, intraday, ambiguous and out-of-year rows are excluded. Do not add these figures to canonical totals for the same disposals.</p>
+            <div class="kpis kpis-3"><article class="kpi"><span class="mono kpi-label">BROKER STCG / INR</span><strong id="broker-stcg" class="mono kpi-val"></strong></article><article class="kpi"><span class="mono kpi-label">BROKER LTCG / INR</span><strong id="broker-ltcg" class="mono kpi-val"></strong></article><article class="kpi"><span class="mono kpi-label">PROVISIONAL ROWS</span><strong id="broker-count" class="mono kpi-val"></strong></article></div>
+          </div>
+          <h4 class="subhead">Working-paper totals / confirmed canonical lots only</h4>
+          <div class="kpis"><article class="kpi"><span class="mono kpi-label">NET STCG / INR</span><strong id="stcg" class="mono kpi-val"></strong><small>Included canonical lots only</small></article><article class="kpi"><span class="mono kpi-label">NET LTCG / INR</span><strong id="ltcg" class="mono kpi-val"></strong><small>Before exemptions or set-off</small></article><article class="kpi"><span class="mono kpi-label">INCLUDED LOTS</span><strong id="included" class="mono kpi-val"></strong><small>Based on supplied attestations</small></article><article class="kpi"><span class="mono kpi-label">NEEDS REVIEW / EXCLUDED</span><strong id="blocked" class="mono kpi-val"></strong><small>Not included in gain totals</small></article></div>
+          <div id="lots-panel" class="panel table-panel"><div class="table-scroll" tabindex="0" role="region" aria-label="Disposed lots review"><table class="tbl"><caption>Disposed-lot review (first 200 rows; workbook includes all rows)</caption><thead><tr><th>Asset / source</th><th>Acquired / sold</th><th>Status / term</th><th>Gain INR</th><th>Review notes</th></tr></thead><tbody id="lots"></tbody></table></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="lab" class="section lab">
+      <div class="contours" aria-hidden="true"></div>
+      <div class="wrap">
+        <p class="kicker">THE HOLDING LAB</p>
+        <h2 class="disp display-2 rise">Short-term or long-term?</h2>
+        <p class="lede">The same rule the app uses: more than 12 calendar months is long-term, and a sale on the one-year anniversary counts. Try the edge cases.</p>
+        <div class="lab-grid">
+          <div class="panel lab-panel">
+            <div class="field-row">
+              <div class="field"><label for="lab-buy">Buy date</label><input id="lab-buy" class="inp" type="date" value="2024-06-14"></div>
+              <div class="field"><label for="lab-sell">Sell date</label><input id="lab-sell" class="inp" type="date" value="2025-06-14"></div>
+            </div>
+            <div class="field lab-kind"><label for="lab-kind">Asset type</label>
+              <select id="lab-kind" class="inp"><option value="listed_equity">Listed Indian equity</option><option value="equity_mf">Equity-oriented mutual fund</option><option value="debt">Debt fund</option></select>
+            </div>
+            <p class="mono mini-label">EDGE CASES</p>
+            <div id="lab-presets" class="chip-row"></div>
+          </div>
+          <div id="lab-result" class="panel lab-panel result" aria-live="polite">
+            <div class="lab-head">
+              <div><div class="mono mini-label">CLASSIFICATION</div><div id="lab-term" class="disp lab-term"></div></div>
+              <span id="lab-status" class="mono lab-status"></span>
+            </div>
+            <p id="lab-reason" class="lab-reason"></p>
+            <div>
+              <div class="mono track-scale"><span>0</span><span>1 year mark</span><span>2 years</span></div>
+              <div class="track"><div id="lab-fill" class="fill"></div><div id="lab-mark" class="mark"></div></div>
+            </div>
+            <div class="lab-stats">
+              <div class="kpi"><div class="mono kpi-label">HELD</div><div id="lab-held" class="lab-stat"></div></div>
+              <div class="kpi"><div class="mono kpi-label">DAYS</div><div id="lab-days" class="lab-stat"></div></div>
+              <div class="kpi"><div class="mono kpi-label">SALE YEAR</div><div id="lab-fy" class="lab-stat"></div></div>
+            </div>
+          </div>
+        </div>
+        <p class="muted small lab-foot">A teaching toy, not tax advice. The app itself checks far more: costs, STT, remarks and duplicates.</p>
+      </div>
+    </section>
+
+    <section id="how" class="section">
+      <div class="wrap">
+        <p class="kicker">THREE MOVES</p>
+        <h2 class="disp display-2 rise">Bring the numbers. Keep control.</h2>
+        <div class="tabs" role="tablist" aria-label="Workflow steps">
+          <button class="tab on" type="button" role="tab" id="step-tab-0" aria-controls="step-0" aria-selected="true">01 Upload</button>
+          <button class="tab" type="button" role="tab" id="step-tab-1" aria-controls="step-1" aria-selected="false" tabindex="-1">02 Review</button>
+          <button class="tab" type="button" role="tab" id="step-tab-2" aria-controls="step-2" aria-selected="false" tabindex="-1">03 Fill the ITR</button>
+        </div>
+        <div class="deck">
+          <div class="deckcard" id="step-0" role="tabpanel" aria-labelledby="step-tab-0">
+            <div class="disp grad deck-num">01</div>
+            <div class="deck-text"><h3 class="disp">Upload</h3><p>Groww capital-gains reports from every account, plus canonical CSV lots for anything else. P&amp;L statements are rejected on purpose because they double-count sales.</p></div>
+          </div>
+          <div class="deckcard" id="step-1" role="tabpanel" aria-labelledby="step-tab-1">
+            <div class="disp grad deck-num">02</div>
+            <div class="deck-text"><h3 class="disp">Review your gains</h3><p>Short- and long-term totals, combined across accounts, with a per-account breakdown and every lot traced to its file and row.</p></div>
+          </div>
+          <div class="deckcard" id="step-2" role="tabpanel" aria-labelledby="step-tab-2">
+            <div class="disp grad deck-num">03</div>
+            <div class="deck-text"><h3 class="disp">Fill the ITR</h3><p>Click a form card on the ring and follow the guide: which fields to fill, which to skip. Keep the Excel working paper for checking.</p></div>
+          </div>
+        </div>
+        <div class="deck-foot"><button id="step-next" class="btn btn-ghost" type="button">Next step</button></div>
+      </div>
+    </section>
+
+    <section id="private" class="section private">
+      <div class="wrap narrow rise">
+        <p class="kicker">PRIVATE BY DESIGN</p>
+        <h2 class="disp display-2">Your numbers never<br>leave the <span class="grad">tab.</span></h2>
+        <p class="lede center">Parsing, Decimal arithmetic and the workbook all run in your browser with Pyodide. No telemetry, no analytics, no account.</p>
+        <div class="panel flow-toggle">
+          <button id="flow-switch" class="switch" type="button" role="switch" aria-checked="false" aria-label="Show where my data goes"><span class="knob"></span></button>
+          <div><div class="flow-title">Show where my data goes</div><div id="flow-msg" class="muted small" aria-live="polite">Flip it to trace the path your files take.</div></div>
+        </div>
+        <div id="flow" class="flow" hidden>
+          <div class="flow-nodes">
+            <div class="node"><div class="mono node-k">1 / YOUR DISK</div><div class="node-t">Broker XLSX or CSV</div><div class="muted small">you pick the files</div></div>
+            <svg class="flow-arrow" viewBox="0 0 34 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 10h28"></path><path d="M24 4l6 6-6 6"></path></svg>
+            <div class="node"><div class="mono node-k">2 / THIS BROWSER TAB</div><div class="node-t">Python in the browser</div><div class="muted small">Pyodide and openpyxl do the maths</div></div>
+            <svg class="flow-arrow" viewBox="0 0 34 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 10h28"></path><path d="M24 4l6 6-6 6"></path></svg>
+            <div class="node"><div class="mono node-k">3 / BACK TO YOU</div><div class="node-t">Excel working paper</div><div class="muted small">downloaded to your disk</div></div>
+          </div>
+          <p class="muted small center">No server ever sees your files. The only downloads are the public Python runtime from cdn.jsdelivr.net and the bundled openpyxl wheels from this site.</p>
+        </div>
+      </div>
+      <div class="wrap limitations">
+        <h2 class="disp display-3">A working paper, not a tax return.</h2>
+        <p>Groww stock and mutual-fund capital-gains layouts only; other broker-native formats and P&amp;L reports are rejected. Only delivery-based listed Indian equity and verified equity-oriented mutual funds are in scope. Holdings over 12 calendar months are classified as long-term. No tax liability, 111A/112A eligibility certification, grandfathering, corporate-action reconstruction, FIFO matching, debt-fund calculations, F&amp;O, intraday, AIS integration or official ITR upload schema.</p>
+        <p>FY 2024-25 and FY 2025-26 only. Native rows remain pending verification and outside confirmed working-paper totals. Check every source against the broker report and consult your tax adviser. <a href="https://pib.gov.in/PressReleasePage.aspx?PRID=2036604&amp;reg=3&amp;lang=2" target="_blank" rel="noreferrer">CBDT holding-period reference</a>.</p>
+      </div>
+    </section>
   </main>
-  <footer>ITR Stock Assist / Private by design. Transparent by default. / v0.3.1</footer>
+  <footer class="site-footer">ITR Stock Assist / Private by design. Transparent by default. / v0.3.1</footer>
+
+  <div id="dlg-overlay" class="ovl" hidden>
+    <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title" aria-describedby="dlg-sub">
+      <div class="dlg-head">
+        <div class="dlg-head-text">
+          <p id="dlg-kicker" class="kicker"></p>
+          <h2 id="dlg-title" class="disp dlg-title"></h2>
+          <p id="dlg-sub" class="muted"></p>
+        </div>
+        <button id="dlg-close" class="icon-btn" type="button" aria-label="Close and go back to the ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      </div>
+      <div id="dlg-form" class="dlg-form" hidden>
+        <div class="dlg-bar">
+          <div class="seg" role="group" aria-label="Which fields">
+            <button id="seg-all" type="button" class="on" aria-pressed="true">All fields</button>
+            <button id="seg-fill" type="button" aria-pressed="false">Only what I fill</button>
+          </div>
+        </div>
+        <div class="dlg-cols">
+          <div class="dlg-paper">
+            <div id="paperbox" class="paperbox" tabindex="0" role="region" aria-label="Recreated form"></div>
+            <p class="muted small">Recreated from the notified ITR-2 form for AY 2026-27, laid out page by page with official numbering. It scrolls with the list; scroll it yourself to pause.</p>
+          </div>
+          <div class="dlg-values">
+            <div class="kicker">YOUR VALUES / FROM YOUR REPORTS</div>
+            <div class="walk-ctrls">
+              <button id="walk-prev" class="icon-btn" type="button" aria-label="Previous field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+              <button id="walk-play" class="icon-btn" type="button" aria-label="Pause walkthrough"><svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"></path></svg><svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg></button>
+              <button id="walk-next" class="icon-btn" type="button" aria-label="Next field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+              <span id="walk-count" class="mono muted small"></span>
+              <div class="prog"><div id="walk-prog"></div></div>
+            </div>
+            <div id="listbox" class="listbox"></div>
+            <p id="dlg-footer" class="muted small"></p>
+          </div>
+        </div>
+      </div>
+      <div id="dlg-info" class="dlg-info" hidden></div>
+      <div class="dlg-foot">
+        <span class="muted small">Click outside or press Esc to go back to the ring.</span>
+        <button id="dlg-next" class="btn btn-ghost" type="button"></button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
