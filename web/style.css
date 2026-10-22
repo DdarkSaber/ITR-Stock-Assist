@@ -350,7 +350,7 @@ body.dlg-open{overflow:hidden}
 .pbox.nobox{background:#f0f1f4}
 .pbox.skipbox{background:repeating-linear-gradient(45deg,#f2f3f6,#f2f3f6 6px,#e3e6ec 6px,#e3e6ec 12px)}
 .prow.dim{color:#888888;background:#f6f6f6}
-.prow.hl{background:#fff2c2;box-shadow:inset 4px 0 0 #d99a00}
+.prow.hl{background:#fff2c2;box-shadow:inset 0 0 0 2px #d99a00}
 .prow.hl .pbox{background:#ffd95e}
 .ftable-wrap{overflow-x:auto}
 .ftable{width:100%;min-width:30rem;border-collapse:collapse;font:.75rem Arial,sans-serif;margin:.375rem 0 .625rem}
