@@ -17,13 +17,15 @@ def payload(book, name="capital-gains.xlsx"):
     return {"name": name, "base64": base64.b64encode(stream.getvalue()).decode()}
 
 
-def stock_book(rows=None, offset=7, title="Capital Gains Statement for stocks"):
+def stock_book(rows=None, offset=7, title="Capital Gains Statement for stocks", dividends=None):
     book = Workbook()
     sheet = book.active
     sheet.title = "Synthetic stock CG"
     sheet.append([title])
     for _ in range(offset):
         sheet.append([])
+    if dividends is not None:
+        sheet.append(["Total Dividends", dividends])
     for section in ("Intraday trades", "Short Term trades", "Long Term trades", "Other trades"):
         sheet.append([section])
         sheet.append(STOCK_HEADERS)
@@ -279,3 +281,18 @@ def test_groww_zero_cost_and_sale_are_flagged_for_manual_confirmation():
     assert record["status"] == "BLOCKED"
     assert any("likely rights entitlement or corporate action - confirm" in issue
                for issue in record["issues"])
+
+
+def test_stock_summary_dividends_are_informational_and_mapped_to_schedule_os():
+    data = review([payload(stock_book(
+        {"Short Term trades": [stock_row()]}, dividends=1234.56,
+    ), "synthetic-dividends.xlsx")], "2025-26")
+    assert data["dividend_notice"] == "Report in Schedule OS"
+    assert data["dividend_reports"] == [{
+        "source_file": "synthetic-dividends.xlsx", "source_sheet": "Synthetic stock CG",
+        "source_line": 9, "amount": "1234.56",
+    }]
+    assert data["filing"]["groups"][0]["net"] == "100.2"
+    book = load_workbook(io.BytesIO(workbook_bytes(data)))
+    assert any(row[0].value == "Groww-reported dividends" and
+               "Report in Schedule OS" in row[1].value for row in book["Filing review"].iter_rows())

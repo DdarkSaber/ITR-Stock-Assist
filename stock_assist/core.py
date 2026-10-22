@@ -126,6 +126,14 @@ def _review(files, fy):
                             "rows": len(loaded), "outcome": "Imported"})
     if len(records) > MAX_ROWS:
         raise ImportProblem(f"Maximum {MAX_ROWS} disposed lots per review.")
+    dividend_reports = [
+        {
+            "source_file": imported["source_file"], "source_sheet": imported["source_sheet"],
+            "source_line": imported["reported_dividends"]["source_line"],
+            "amount": imported["reported_dividends"]["amount"],
+        }
+        for imported in imports if imported.get("reported_dividends")
+    ]
     def identity(record):
         if record.get("native"):
             return record["duplicate_key"]
@@ -241,6 +249,8 @@ def _review(files, fy):
         "broker_totals": {key: f"{value:.2f}" for key, value in broker_totals.items()},
         "broker_review": sum(r["broker_summary_included"] for r in records),
         "imports": imports,
+        "dividend_reports": dividend_reports,
+        "dividend_notice": "Report in Schedule OS" if dividend_reports else "",
         "intraday_present": any(record.get("intraday", False) for record in records),
         "business_income_warning": (
             BUSINESS_INCOME_WARNING if any(record.get("intraday", False) for record in records) else ""
@@ -283,6 +293,13 @@ def workbook_bytes(result):
          "working-paper totals above. Canonical and native representations of the same lots "
          "must not be added together."],
     ]
+    for report in result["dividend_reports"]:
+        metadata.append(["Groww-reported dividends (INR)", report["amount"]])
+        metadata.append([
+            "Dividend destination",
+            f"Report in Schedule OS; informational only, not included in capital-gains totals. "
+            f"Source: {report['source_file']} / {report['source_sheet']} row {report['source_line']}.",
+        ])
     if result["intraday_present"]:
         metadata.append(["Intraday warning", result["business_income_warning"]])
     from stock_assist.filing import workbook_sheets
@@ -295,15 +312,19 @@ def workbook_bytes(result):
         ]],
         "Review issues": [["Source file", "Source row / CSV end line", "Lot ID", "Issue", "Source sheet"]],
         "Source rows": [["Source file", "Source row / CSV end line", *HEADERS, "Source sheet", "Native source fields"]],
-        "Import manifest": [["Source file", "Source sheet", "Format", "Disposed rows", "Outcome"]],
+        "Import manifest": [[
+            "Source file", "Source sheet", "Format", "Disposed rows", "Outcome",
+            "Reported dividends INR",
+        ]],
     }
     sheets["Disposed lots"][0].extend([
         "Source sheet", "Scheme code (not ISIN)", "Broker term", "Broker gain INR",
         "Gross gain INR before expenses", "Reconciliation", "Provisional broker summary",
     ])
     for imported in result["imports"]:
-        sheets["Import manifest"].append([imported[k] for k in
-                                         ("source_file", "source_sheet", "format", "rows", "outcome")])
+        sheets["Import manifest"].append([
+            imported[k] for k in ("source_file", "source_sheet", "format", "rows", "outcome")
+        ] + [(imported.get("reported_dividends") or {}).get("amount", "")])
     for r in result["records"]:
         values = [r["raw"][key] for key in HEADERS]
         sheets["Disposed lots"].append([

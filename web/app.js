@@ -22,6 +22,8 @@ function invalidate() {
   $("results").hidden = true;
   $("intraday-warning").hidden = true;
   $("intraday-warning").textContent = "";
+  $("dividend-info").hidden = true;
+  $("dividend-info").textContent = "";
   $("lots").replaceChildren();
   $("manifest").replaceChildren();
   $("filing-groups").replaceChildren();
@@ -106,6 +108,10 @@ function render(data) {
   $("filing-year").textContent = data.filing.year_note;
   $("intraday-warning").textContent = data.business_income_warning;
   $("intraday-warning").hidden = !data.intraday_present;
+  $("dividend-info").textContent = data.dividend_reports.map(report =>
+    `Groww-reported dividends: INR ${report.amount} (${report.source_file} / ${report.source_sheet} row ${report.source_line}). ${data.dividend_notice}. Informational only; not included in capital-gains totals.`
+  ).join(" ");
+  $("dividend-info").hidden = data.dividend_reports.length === 0;
   $("filing-groups").replaceChildren(...data.filing.groups.map(group => {
     const tr = document.createElement("tr");
     for (const value of [group.schedule, group.period, group.basis, group.status,

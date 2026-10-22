@@ -10,6 +10,8 @@ Open **Filing review** first. It identifies FY/AY, completeness, rupee units, ye
 
 **Summary**, **Disposed lots**, **Review issues**, **Source rows**, **Import manifest** preserve the original review evidence. **References** records primary sources. No source status is upgraded by formatting.
 
+Groww stock-report summary dividends, when present, are shown on **Filing review**, **Summary**, and the import manifest with the informational note **Report in Schedule OS**. They are not added to Schedule CG groups or calculations.
+
 ## Machine-readable sheet: `Filing map`
 
 First row is the exact header. One row is **field evidence for one source disposal lot**, not a return object, final schedule total or upload record. Multiple rows share a `record_id`. Do not sum every `value` column; it contains different metrics and repeated evidence. There are no final annual tax values.
@@ -40,6 +42,7 @@ First row is the exact header. One row is **field evidence for one source dispos
 | `cg.balance_before_adjustments` | Working gain after confirmed cost/expenses: ST `BalanceCG`; LT `Balance`. Blank for native reports. It is **not taxable income** and does not settle all required schema fields or eligibility. |
 | `app.broker_reported_gain` | Native reconciliation amount only; **no direct official field mapping**. Never substitute it for a confirmed balance or add it to canonical gains. |
 | `cg.non_equity_net` | Groww-reported net for a debt-fund or flagged INF fund/ETF row; provisional candidate for Schedule CG A5, Table F row 3 (`AccruOrRecOfCG`), not a computed tax amount. |
+| Groww-reported dividend summary | Informational source-report amount only; report in Schedule OS. Not a Schedule CG amount or field-map value. |
 | `cg.section94_adjustment` | ST `LossSec94of7Or94of8`; unknown, blank. |
 | `cg.capital_gain_after_adjustments` | ST `CapgainonAssets`; unknown, blank pending final adjustments. |
 | `112a.isin` | Actual `ISINCode`, or blank if absent. A scheme code is not an ISIN. |

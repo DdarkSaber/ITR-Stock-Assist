@@ -79,6 +79,32 @@ def _identity_number(value):
     return format(Decimal(value).normalize(), "f") if value else ""
 
 
+def _dividend_summary(rows, stock):
+    if not stock:
+        return None
+    matches = []
+    for line, values in enumerate(rows, 1):
+        label = _text(values[0]).casefold()
+        if label in SECTIONS:
+            break
+        if label.startswith("dividend") or label.startswith("total dividend"):
+            amounts = [value for value in values[1:] if _text(value)]
+            if not amounts:
+                raise ImportProblem(f"Sheet row {line}: dividend summary amount is missing.")
+            try:
+                amount = _decimal(amounts[-1], "Reported dividends")
+            except ValueError as exc:
+                raise ImportProblem(
+                    f"Sheet row {line}: unsupported dividend summary amount; review the original report."
+                ) from exc
+            matches.append({"source_line": line, "amount": _fixed(amount)})
+    if len(matches) > 1:
+        raise ImportProblem(
+            "Multiple dividend summary rows found; cannot identify a single reported total."
+        )
+    return matches[0] if matches else None
+
+
 def parse_groww(encoded, filename):
     """Return records plus an explicit import manifest, even for empty reports."""
     from openpyxl import load_workbook
@@ -130,6 +156,7 @@ def parse_groww(encoded, filename):
             raise ImportProblem("Unrecognized or mixed XLSX schema. Supported: original Groww "
                                 "Stock Capital Gains and Mutual Fund Capital Gains reports.")
         kind = "groww_stock_cg" if stock else "groww_mf_cg"
+        reported_dividends = _dividend_summary(rows, stock)
         expected = STOCK_HEADERS if stock else MF_HEADERS
         section = None
         active = False
@@ -188,6 +215,7 @@ def parse_groww(encoded, filename):
         return records, {
             "source_file": filename, "source_sheet": sheet.title, "format": kind,
             "rows": len(records),
+            "reported_dividends": reported_dividends,
             "outcome": "EMPTY: no disposal rows reported" if not records else "Imported for broker reconciliation",
         }
     except ImportProblem:

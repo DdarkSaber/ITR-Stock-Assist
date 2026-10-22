@@ -237,6 +237,13 @@ def workbook_sheets(result):
     ]
     if result["intraday_present"]:
         overview.insert(4, ["Intraday warning", result["business_income_warning"]])
+    for report in result["dividend_reports"]:
+        overview.append([
+            "Groww-reported dividends",
+            f"INR {report['amount']} from {report['source_file']} / {report['source_sheet']} "
+            f"row {report['source_line']}; Report in Schedule OS. Informational only, not "
+            "included in capital-gains totals.",
+        ])
     groups = [[
         "Candidate destination", "Transfer period", "Evidence basis", "Status", "Lots",
         "Gross consideration INR", "Gross consideration INR (rounded INR)",

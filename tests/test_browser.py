@@ -194,6 +194,24 @@ def test_browser_import_download_and_reset(tmp_path):
             zero_book = load_workbook(io.BytesIO(Path(zero_download.value.path()).read_bytes()))
             assert any("likely rights entitlement or corporate action - confirm" in row[3].value
                        for row in zero_book["Review issues"].iter_rows(min_row=2))
+            dividend_file = payload(stock_book(
+                {"Short Term trades": [stock_row()]}, dividends=1234.56,
+            ), "synthetic-dividends.xlsx")
+            page.locator("#files").set_input_files({
+                "name": dividend_file["name"], "mimeType": "application/octet-stream",
+                "buffer": base64.b64decode(dividend_file["base64"]),
+            })
+            page.locator("#review").click()
+            expect(page.locator("#dividend-info")).to_be_visible(timeout=30000)
+            expect(page.locator("#dividend-info")).to_contain_text("Groww-reported dividends: INR 1234.56")
+            expect(page.locator("#dividend-info")).to_contain_text("Report in Schedule OS")
+            with page.expect_download(timeout=30000) as dividend_download:
+                page.locator("#export").click()
+            dividend_book = load_workbook(io.BytesIO(
+                Path(dividend_download.value.path()).read_bytes()))
+            assert any(row[0].value == "Groww-reported dividends" and
+                       "Report in Schedule OS" in row[1].value
+                       for row in dividend_book["Filing review"].iter_rows())
             empty_file = payload(stock_book(), "empty.xlsx")
             page.locator("#files").set_input_files({
                 "name": empty_file["name"], "mimeType": "application/octet-stream",
