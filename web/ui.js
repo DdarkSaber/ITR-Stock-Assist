@@ -47,6 +47,14 @@
     });
   }
 
+  /* ---------- Pause endless decorative animations while off-screen ---------- */
+  if ("IntersectionObserver" in window) {
+    const idleWatch = new IntersectionObserver(entries => {
+      for (const entry of entries) entry.target.classList.toggle("idle", !entry.isIntersecting);
+    });
+    for (const node of qsa(".ribbons, .contours, .halo")) idleWatch.observe(node);
+  }
+
   /* ---------- 3D ring ---------- */
   class Ring {
     constructor(wrap, onFront) {
