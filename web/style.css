@@ -144,7 +144,7 @@ body.dlg-open{overflow:hidden}
 .tilt{position:relative;width:var(--card-w);height:var(--card-h);transform-style:preserve-3d;transform:rotateX(-8deg);transition:transform .25s ease-out}
 .ring{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .9s var(--ease)}
 .stage.dragging .ring,.stage.dragging .orb{transition:none}
-.card3{position:absolute;left:0;top:0;width:var(--card-w);height:var(--card-h);border-radius:calc(var(--card-w) * .1);padding:calc(var(--card-w) * .09);display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(165deg,color-mix(in srgb,var(--a1) 30%,transparent),var(--panel) 60%);border:1px solid var(--line);opacity:.55;-webkit-backface-visibility:hidden;backface-visibility:hidden;transition:opacity .5s,border-color .5s,box-shadow .5s,background .5s}
+.card3{position:absolute;left:0;top:0;width:var(--card-w);height:var(--card-h);border-radius:calc(var(--card-w) * .1);padding:calc(var(--card-w) * .09);display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(165deg,color-mix(in srgb,var(--a1) 30%,transparent),var(--panel) 60%);border:1px solid var(--line);opacity:.78;-webkit-backface-visibility:hidden;backface-visibility:hidden;transition:opacity .5s,border-color .5s,box-shadow .5s,background .5s}
 .card3.on{opacity:1;border-color:var(--a2);background:linear-gradient(165deg,color-mix(in srgb,var(--a1) 32%,var(--bg)),var(--bg) 70%);box-shadow:0 0 50px -8px color-mix(in srgb,var(--a2) 60%,transparent)}
 .card3 .ic{width:calc(var(--card-w) * .17);height:calc(var(--card-w) * .17)}
 .card-kick{font-size:max(.6875rem,calc(var(--card-w) * .055));letter-spacing:.1em;color:var(--mut)}
@@ -377,7 +377,7 @@ body.dlg-open{overflow:hidden}
   .tilt{transform:none!important;width:100%;height:auto;transition:none}
   .ring{position:relative;inset:auto;display:flex;gap:.875rem;overflow-x:auto;scroll-snap-type:x mandatory;transform:none!important;padding:.75rem calc(50% - var(--card-w) / 2);scrollbar-width:none;transition:none}
   .ring::-webkit-scrollbar{display:none}
-  .card3{position:relative;flex:none;transform:none!important;scroll-snap-align:center;opacity:.6}
+  .card3{position:relative;flex:none;transform:none!important;scroll-snap-align:center;opacity:.8}
   .halo,.orb,.stage::before{display:none}
   .ring-info{padding:1rem}
   .kpi-grid{grid-template-columns:minmax(0,1fr)}
