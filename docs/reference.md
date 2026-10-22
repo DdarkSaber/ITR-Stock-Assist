@@ -1,4 +1,4 @@
-# ITR Stock Assist
+# ITR Stock Assist: full reference
 
 A separate, local-first Indian listed-equity / equity-oriented mutual-fund capital-gains helper. The web app follows ITR Assist's Solar Copper visual language: dark warm panels, copper/gold accents, filing-year selection, upload cards, review KPIs and an Excel working paper.
 
@@ -27,7 +27,7 @@ CSV/XLSX parsing, Decimal arithmetic, classification and workbook generation run
 
 Internet is required to download the public Python runtime from `cdn.jsdelivr.net` on first review and its micropip installer on first XLSX import/export. Pinned openpyxl 3.1.5 and et-xmlfile 2.0.0 wheels are bundled under `web\vendor`, including upstream licenses; no runtime PyPI queries are needed. This is **not a guaranteed fully offline app**: browser caches may be evicted, and no service worker is installed. Dependencies are third-party executable code, so only use a trusted runtime source. Reset clears application state and rendered records; this is not a secure memory-erasure guarantee. Downloaded workbooks are not deleted by reset.
 
-Keep real reports outside the project, or in ignored `private`. When serving this directory, use the documented loopback binding and do not expose the static server publicly; the development server does not implement access control. Nothing has been published or deployed.
+Keep real reports outside the project, or in ignored `private`. When serving this directory, use the documented loopback binding and do not expose the static server publicly; the development server does not implement access control.
 
 ## Groww native import
 
