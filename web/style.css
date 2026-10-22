@@ -404,4 +404,10 @@ body.dlg-open{overflow:hidden}
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation:none!important;transition:none!important}
+  .ovl,.dlg{animation:fadein .15s both!important}
+}
+
+/* ---------- Forced colors (Windows High Contrast) ---------- */
+@media (forced-colors:active){
+  .grad{background:none;color:CanvasText;-webkit-background-clip:border-box;background-clip:border-box}
 }

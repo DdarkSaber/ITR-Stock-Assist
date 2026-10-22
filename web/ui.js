@@ -71,6 +71,7 @@
       this.moved = false;
       this.kicker = qs(".ring-kicker", wrap);
       this.desc = qs(".ring-desc", wrap);
+      this.live = qs(".ring-info-text", wrap);
       this.pauseBtn = qs(".ring-pause", wrap);
       this.dotsBox = qs(".dots", wrap);
       this.dots = this.cards.map((card, i) => {
@@ -100,7 +101,7 @@
       reducedMotion.addEventListener("change", () => { if (isReduced()) this.paused = true; this.render(); });
       this.timer = setInterval(() => this.auto(), 3600);
       this.layout();
-      this.render();
+      this.render(true);
     }
     idx() {
       if (isFlat()) return this.flatIdx ?? 0;
@@ -126,7 +127,9 @@
       if (isFlat()) return;
       this.tilt.style.transform = `scale(${this.scale.toFixed(3)}) rotateX(${this.tiltX}deg) rotateY(${this.tiltY}deg)`;
     }
-    render() {
+    render(quiet) {
+      // auto-rotation must not be announced every 3.6s; user-driven changes are
+      this.live.setAttribute("aria-live", quiet ? "off" : "polite");
       const i = this.idx();
       if (!isFlat()) {
         this.ring.style.transform = `rotateY(${this.angle}deg)`;
@@ -174,7 +177,7 @@
       if (this.paused || this.hover || this.focus || this.drag || this.blocked || isFlat() || isReduced()) return;
       if (document.hidden || !this.visible()) return;
       this.angle = Math.round(this.angle / this.step) * this.step - this.step;
-      this.render();
+      this.render(true);
     }
     cardClick(i) {
       if (this.moved) { this.moved = false; return; }
